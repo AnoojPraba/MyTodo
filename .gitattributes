@@ -1,0 +1,7 @@
+# Normalise text files; keep Windows batch files with CRLF so they run after cloning
+* text=auto
+*.bat text eol=crlf
+
+# Binary assets
+*.ico binary
+*.png binary

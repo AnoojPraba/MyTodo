@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Open tasks report · MyTodo{% endblock %}
+{% block content %}
+<div class="detail-head">
+  <div>
+    <h1>Open tasks report</h1>
+    <div class="muted">{{ rows|length }} open task{{ '' if rows|length == 1 else 's' }} · generated {{ generated.strftime('%d %b %Y, %H:%M') }}</div>
+  </div>
+  <div class="actions no-print">
+    <button class="btn primary" onclick="window.print()">Print / Save as PDF</button>
+    <a class="btn" href="{{ url_for('report_csv') }}">Download CSV</a>
+  </div>
+</div>
+
+{% if rows %}
+<table class="tasks report">
+  <thead><tr><th>#</th><th>Task</th><th>State</th><th>Due date</th><th>Last comment</th></tr></thead>
+  <tbody>
+  {% for t in rows %}
+    <tr>
+      <td class="muted">{{ t.id }}</td>
+      <td>
+        <a href="{{ url_for('task_detail', task_id=t.id) }}" class="title">{{ t.title }}</a>
+        <div><span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span></div>
+        {% if t.state == 'depended' and t.depends_on %}<div class="dep">⛓ {{ t.depends_on }}</div>{% endif %}
+      </td>
+      <td><span class="badge s-{{ t.state }}">{{ t.state|capitalize }}</span></td>
+      <td class="nowrap {{ 'overdue-text' if t.due_date and t.due_date < today }}">
+        {{ t.due_date|d or '—' }}{% if t.due_date and t.due_date < today %}<div class="small">Overdue</div>{% endif %}
+      </td>
+      <td class="comment-cell">
+        {% if t.last_comment %}
+          <div class="body">{{ t.last_comment }}</div>
+          <div class="muted small">{{ t.last_comment_at|dt }}</div>
+        {% else %}<span class="muted">No comments</span>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No open tasks to report.</div>
+{% endif %}
+{% endblock %}

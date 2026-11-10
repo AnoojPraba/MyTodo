@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="MyTodo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4263eb"/>
+      <stop offset="1" stop-color="#7048e8"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="url(#g)"/>
+  <path d="M66.0 136.0 L110.0 178.0 L172.9 108.2" fill="none" stroke="#fff"
+        stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M198.6 139.5 L202.4 75.6 L139.2 85.9 Z" fill="#fff" stroke="#fff"
+        stroke-width="8" stroke-linejoin="round"/>
+</svg>

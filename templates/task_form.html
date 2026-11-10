@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ 'New task' if is_new else 'Edit task' }} · MyTodo{% endblock %}
+{% block content %}
+<h1>{{ 'New task' if is_new else 'Edit task #' ~ task.id }}</h1>
+<form method="post" class="panel form">
+  <label>Title *
+    <input name="title" value="{{ task.title or '' }}" required autofocus maxlength="300">
+  </label>
+  <label>Description
+    <textarea name="description" rows="6">{{ task.description or '' }}</textarea>
+  </label>
+  <div class="row">
+    <label>Priority
+      <select name="priority">
+        {% for p in PRIORITIES %}<option {{ 'selected' if task.priority == p }}>{{ p }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Due date
+      <input type="date" name="due_date" value="{{ task.due_date or '' }}">
+    </label>
+    <label>State
+      <select name="state" id="state-field">
+        {% for s in STATES %}<option value="{{ s }}" {{ 'selected' if task.state == s }}>{{ s|capitalize }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+  <label id="depends-field">Depends on (who / what is it waiting for?)
+    <input name="depends_on" value="{{ task.depends_on or '' }}" placeholder="e.g. Waiting on John for API access">
+  </label>
+  <div id="resolution-field">
+    {% include "_resolution_help.html" %}
+    <textarea name="resolution" rows="6" minlength="{{ MIN_RESOLUTION }}"
+              placeholder="e.g. Migrated all 40 customer accounts to the new billing system two weeks ahead of plan; cut invoice errors from ~5% to under 1%.">{{ task.resolution or '' }}</textarea>
+  </div>
+  <div class="actions">
+    <button class="btn primary">{{ 'Create task' if is_new else 'Save changes' }}</button>
+    <a class="btn ghost" href="{{ url_for('dashboard') if is_new else url_for('task_detail', task_id=task.id) }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

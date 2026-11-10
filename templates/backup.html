@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Backup · MyTodo{% endblock %}
+{% block content %}
+<h1>Backup &amp; restore</h1>
+<div class="detail-grid">
+  <section class="panel">
+    <h2>Export</h2>
+    <p>Downloads all tasks, comments and the full history log as one JSON file. A copy is also saved to:</p>
+    <p><code>{{ folder }}</code></p>
+    <a class="btn primary" href="{{ url_for('backup_export') }}">Download backup</a>
+    {% if files %}
+    <h3>Saved backups</h3>
+    <ul class="files">{% for p in files %}<li><code>{{ p.name }}</code></li>{% endfor %}</ul>
+    <p class="muted small">Files starting with <code>auto-</code> are made each time the app starts (newest 10 kept).
+    <code>pre-import-</code> files are safety copies made just before an import.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Import</h2>
+    <form method="post" action="{{ url_for('backup_import') }}" enctype="multipart/form-data" class="form">
+      <label>Backup file (.json)
+        <input type="file" name="file" accept=".json,application/json" required>
+      </label>
+      <fieldset>
+        <label class="radio"><input type="radio" name="mode" value="merge" checked> <span><b>Merge</b>: add the backup's tasks alongside existing ones</span></label>
+        <label class="radio"><input type="radio" name="mode" value="replace" id="mode-replace"> <span><b>Replace all</b>: delete existing tasks first</span></label>
+      </fieldset>
+      <label class="radio" id="confirm-row"><input type="checkbox" name="confirm" value="yes"> <span>I understand all current tasks will be replaced</span></label>
+      <button class="btn primary">Import</button>
+    </form>
+    <p class="muted small">The file is checked before anything changes, and a safety copy of your current data is saved first.</p>
+  </section>
+</div>
+{% endblock %}

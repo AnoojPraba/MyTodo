@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Closed · MyTodo{% endblock %}
+{% block content %}
+<h1>Closed tasks</h1>
+<form class="filters auto-submit" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search closed tasks…">
+</form>
+{% if tasks %}
+<table class="tasks">
+  <thead><tr><th>#</th><th>Task</th><th>Priority</th><th>Closed</th><th></th></tr></thead>
+  <tbody>
+  {% for t in tasks %}
+    <tr>
+      <td class="muted">{{ t.id }}</td>
+      <td>
+        <a href="{{ url_for('task_detail', task_id=t.id) }}" class="title">{{ t.title }}</a>
+        {% if t.resolution %}<div class="summary-snip">{{ t.resolution }}</div>
+        {% else %}<div class="small"><a href="{{ url_for('task_edit', task_id=t.id) }}">+ Add closing summary</a></div>{% endif %}
+      </td>
+      <td><span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span></td>
+      <td class="muted small">{{ t.closed_at|dt }}</td>
+      <td>
+        <form method="post" action="{{ url_for('task_state', task_id=t.id) }}">
+          <input type="hidden" name="state" value="triage">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <button class="btn small">Reopen</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No closed tasks{% if q %} match “{{ q }}”{% endif %}.</div>
+{% endif %}
+{% endblock %}

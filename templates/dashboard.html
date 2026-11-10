@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MyTodo{% endblock %}
+{% block content %}
+<section class="cards">
+  <a class="card s-new" href="{{ url_for('dashboard', state='new') }}"><span>{{ counts.new }}</span>New</a>
+  <a class="card s-triage" href="{{ url_for('dashboard', state='triage') }}"><span>{{ counts.triage }}</span>Triage</a>
+  <a class="card s-depended" href="{{ url_for('dashboard', state='depended') }}"><span>{{ counts.depended }}</span>Depended</a>
+  <div class="card overdue"><span>{{ counts.overdue }}</span>Overdue</div>
+</section>
+
+<form class="filters auto-submit" method="get">
+  <input type="search" name="q" value="{{ f.q }}" placeholder="Search title or description…">
+  <select name="state">
+    <option value="">All open states</option>
+    {% for s in STATES if s != 'closed' %}<option value="{{ s }}" {{ 'selected' if f.state == s }}>{{ s|capitalize }}</option>{% endfor %}
+  </select>
+  <select name="priority">
+    <option value="">All priorities</option>
+    {% for p in PRIORITIES|reverse %}<option {{ 'selected' if f.priority == p }}>{{ p }}</option>{% endfor %}
+  </select>
+  <select name="sort">
+    <option value="due" {{ 'selected' if f.sort in ('', 'due') }}>Sort: due date</option>
+    <option value="priority" {{ 'selected' if f.sort == 'priority' }}>Sort: priority</option>
+    <option value="updated" {{ 'selected' if f.sort == 'updated' }}>Sort: recently updated</option>
+  </select>
+  {% if f.q or f.state or f.priority or f.sort %}<a class="btn ghost" href="{{ url_for('dashboard') }}">Clear</a>{% endif %}
+</form>
+
+{% if tasks %}
+<table class="tasks">
+  <thead><tr><th>#</th><th>Task</th><th>Priority</th><th>Due</th><th>State</th><th>Updated</th></tr></thead>
+  <tbody>
+  {% for t in tasks %}
+    <tr>
+      <td class="muted">{{ t.id }}</td>
+      <td>
+        <a href="{{ url_for('task_detail', task_id=t.id) }}" class="title">{{ t.title }}</a>
+        {% if t.state == 'depended' and t.depends_on %}<div class="dep">⛓ {{ t.depends_on }}</div>{% endif %}
+      </td>
+      <td><span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span></td>
+      <td class="{{ 'overdue-text' if t.due_date and t.due_date < today }}">{{ t.due_date|d }}</td>
+      <td>
+        <form method="post" action="{{ url_for('task_state', task_id=t.id) }}" class="state-form">
+          <input type="hidden" name="next" value="{{ request.full_path }}">
+          <select name="state" class="state-select s-{{ t.state }}" data-current="{{ t.state }}">
+            {% for s in STATES %}<option value="{{ s }}" {{ 'selected' if t.state == s }}>{{ s|capitalize }}</option>{% endfor %}
+          </select>
+          <input type="hidden" name="depends_on" value="{{ t.depends_on }}">
+          <input type="hidden" name="resolution" value="{{ t.resolution }}" data-title="{{ t.title }}">
+        </form>
+      </td>
+      <td class="muted small">{{ t.updated_at|dt }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  {% if f.q or f.state or f.priority %}No open tasks match these filters.
+  {% else %}No open tasks. <a href="{{ url_for('task_new') }}">Add one</a> or <a href="{{ url_for('backup_page') }}">import a backup</a>.{% endif %}
+</div>
+{% endif %}
+
+<dialog id="close-dialog" class="close-dialog">
+  <form method="dialog">
+    <h2>Close task</h2>
+    <p class="muted" id="close-dialog-title"></p>
+    {% include "_resolution_help.html" %}
+    <textarea id="close-dialog-text" rows="7" minlength="{{ MIN_RESOLUTION }}" required></textarea>
+    <div class="actions">
+      <button class="btn primary" value="ok">Close task</button>
+      <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

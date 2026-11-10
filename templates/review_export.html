@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance review {{ start|d }} – {{ end|d }}</title>
+<style>
+:root { --bg: #f5f6f8; --panel: #fff; --text: #1d2330; --muted: #5f6672; --line: #dde1e6;
+  --accent: #3b5bdb; --new: #3b82f6; --triage: #b45309; --depended: #7c3aed; --closed: #6b7280;
+  --high: #dc2626; --medium: #b45309; --low: #047857; --danger: #dc2626; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 1rem 1.25rem 2rem; background: #fff; color: var(--text);
+  font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif; }
+{{ css|safe }}
+</style>
+</head>
+<body>
+<main class="rv-doc">
+  {% set interactive = false %}
+  {% include "_review_body.html" %}
+  <footer class="rv-foot">Generated {{ generated.strftime('%d %b %Y, %H:%M') }} with MyTodo {{ version }}</footer>
+</main>
+</body>
+</html>

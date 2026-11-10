@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Performance review · MyTodo{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">{% endblock %}
+{% block content %}
+<div class="review-page">
+
+{% if saved %}
+  <div class="panel rv-controls no-print">
+    <div class="rv-saved-bar">
+      <div><b>Saved review</b> · saved {{ saved.saved_at|dt }}</div>
+      <div class="actions">
+        <button class="btn primary" onclick="window.print()">Print / Save as PDF</button>
+        <a class="btn" href="{{ url_for('review_saved', review_id=saved.id, format='html') }}">Download for email (.html)</a>
+        <a class="btn" href="{{ url_for('review_saved', review_id=saved.id, format='csv') }}">Download CSV</a>
+        <a class="btn ghost" href="{{ url_for('review_page') }}">Back to review</a>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="panel rv-controls no-print">
+    <form method="get" class="filters auto-submit rv-period-form">
+      <label>From <input type="date" name="start" value="{{ start.isoformat() }}"></label>
+      <label>To <input type="date" name="end" value="{{ end.isoformat() }}"></label>
+      <label>Comments
+        <select name="comments">
+          <option value="latest" {{ 'selected' if comments == 'latest' }}>Latest only</option>
+          <option value="all" {{ 'selected' if comments == 'all' }}>All in period</option>
+          <option value="none" {{ 'selected' if comments == 'none' }}>None</option>
+        </select>
+      </label>
+      {% if exclude %}<input type="hidden" name="exclude" value="{{ qs.exclude }}">{% endif %}
+    </form>
+    <div class="rv-quick">
+      {% for label, s, e in quick %}
+        <a class="btn small {{ 'primary' if s == start and e == end }}"
+           href="{{ url_for('review_page', start=s.isoformat(), end=e.isoformat(), comments=comments) }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+    {% if exclude %}<p class="muted small">{{ exclude|length }} task{{ '' if exclude|length == 1 else 's' }} left out of what you share.
+      <a href="{{ url_for('review_page', start=qs.start, end=qs.end, comments=comments) }}">Include all</a></p>{% endif %}
+
+    <form method="post" action="{{ url_for('review_notes') }}" id="notes-form" class="rv-notes-form">
+      {% for k, v in qs.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+      <label for="notes">My summary <span class="muted small">(highlights, impact, learnings: shown at the top of what you share)</span></label>
+      <textarea name="notes" id="notes" rows="5" placeholder="e.g. Delivered the billing migration two weeks early; took over on-call rotation; mentored two new joiners…">{{ notes }}</textarea>
+      <input type="hidden" name="confirm" value="">
+      <div class="actions">
+        <button class="btn">Save summary</button>
+      </div>
+    </form>
+
+    <div class="rv-share">
+      <button class="btn primary" onclick="window.print()">Print / Save as PDF</button>
+      <a class="btn" href="{{ url_for('review_export', fmt='html', **qs) }}">Download for email (.html)</a>
+      <a class="btn" href="{{ url_for('review_export', fmt='csv', **qs) }}">Download CSV</a>
+      <button class="btn" form="notes-form" formaction="{{ url_for('review_save') }}" id="save-review"
+              data-period="{{ start|d }} – {{ end|d }}">Save this review</button>
+    </div>
+    <p class="muted small">Untick “Include” on a task to leave it out of the printout and downloads.
+      <b>Save this review</b> after your discussion: it keeps a copy you can reopen, and your next review starts the day after {{ end|d }}.</p>
+  </div>
+{% endif %}
+
+<div class="rv-doc">
+  {% set interactive = not saved %}
+  {% include "_review_body.html" %}
+  <footer class="rv-foot">Generated {{ generated.strftime('%d %b %Y, %H:%M') }} with MyTodo</footer>
+</div>
+
+{% if past %}
+<section class="panel no-print rv-past">
+  <h2>Past reviews</h2>
+  <table class="tasks">
+    <thead><tr><th>Period</th><th>Completed</th><th>In progress</th><th>Saved</th><th></th></tr></thead>
+    <tbody>
+    {% for r in past %}
+      <tr>
+        <td><a class="title" href="{{ url_for('review_saved', review_id=r.id) }}">{{ r.start|d }} – {{ r.end|d }}</a></td>
+        <td>{{ r.n_completed }}</td>
+        <td>{{ r.n_in_progress }}</td>
+        <td class="muted small">{{ r.saved_at|dt }}</td>
+        <td class="nowrap">
+          <a class="btn small" href="{{ url_for('review_saved', review_id=r.id) }}">View</a>
+          <form method="post" action="{{ url_for('review_delete', review_id=r.id) }}" class="inline confirm-form"
+                data-confirm="Delete this saved review? Your tasks will not be changed.">
+            <button class="btn small ghost">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+</div>
+{% endblock %}

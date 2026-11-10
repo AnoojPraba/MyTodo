@@ -1,0 +1,91 @@
+{#- Shared review content. Expects: data, start, end, notes, comments, interactive (bool) -#}
+{% macro comments_block(t) %}
+  {% if t.comments %}
+  <ul class="rv-comments">
+    {% for c in t.comments %}<li><span class="rv-date">{{ c.created_at|d }}</span> {{ c.body }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+{% endmacro %}
+
+{% macro include_box(t) %}
+  {% if interactive %}
+  <label class="rv-include no-print" title="Untick to leave this task out of what you share">
+    <input type="checkbox" class="rv-toggle" data-id="{{ t.id }}" {{ 'checked' if t.included }}> Include
+  </label>
+  {% endif %}
+{% endmacro %}
+
+<header class="rv-head">
+  <h1>Performance review</h1>
+  <div class="rv-period">{{ start|d }} – {{ end|d }}</div>
+</header>
+
+{% if notes %}
+<section class="rv-section">
+  <h2>Summary</h2>
+  <div class="rv-notes">{{ notes }}</div>
+</section>
+{% endif %}
+
+<section class="rv-stats">
+  <div><span>{{ data.stats.completed }}</span>Completed</div>
+  <div><span>{{ data.stats.in_progress }}</span>In progress at period end</div>
+  <div><span>{{ data.stats.new }}</span>New tasks taken on</div>
+  <div><span>{{ data.stats.high_completed }}</span>High priority completed</div>
+  <div><span>{% if data.stats.on_time_pct is not none %}{{ data.stats.on_time_pct }}%{% else %}–{% endif %}</span>
+    On time{% if data.stats.with_due %} ({{ data.stats.on_time }} of {{ data.stats.with_due }} with due date){% endif %}</div>
+</section>
+
+{% set completed = data.completed_all if interactive else data.completed %}
+{% set in_progress = data.progress_all if interactive else data.in_progress %}
+
+<section class="rv-section">
+  <h2>Completed in this period <span class="rv-count">{{ data.stats.completed }}</span></h2>
+  {% for t in completed %}
+  <article class="rv-card {{ 'excluded' if not t.included }}">
+    <div class="rv-card-head">
+      <h3>{{ t.title }}</h3>
+      {{ include_box(t) }}
+    </div>
+    <div class="rv-meta">
+      <span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span>
+      <span>Started {{ t.created_at|d }}</span>
+      <span>Completed {{ t.closed_at|d }}</span>
+      {% if t.days_taken is not none %}<span>{{ t.days_taken }} day{{ '' if t.days_taken == 1 else 's' }}</span>{% endif %}
+      {% if t.on_time is sameas true %}<span class="rv-ok">On time (due {{ t.due_date|d }})</span>
+      {% elif t.on_time is sameas false %}<span class="rv-late">Late (due {{ t.due_date|d }})</span>{% endif %}
+    </div>
+    {% if t.resolution %}<div class="rv-outcome"><b>Outcome</b><div>{{ t.resolution }}</div></div>
+    {% elif interactive %}<div class="rv-outcome missing no-print">No closing summary. <a href="{{ url_for('task_edit', task_id=t.id) }}">Add one</a></div>{% endif %}
+    {% if t.description %}<div class="rv-desc">{{ t.description }}</div>{% endif %}
+    {{ comments_block(t) }}
+  </article>
+  {% else %}
+  <p class="rv-empty">No tasks were completed in this period.</p>
+  {% endfor %}
+</section>
+
+<section class="rv-section">
+  <h2>In progress at end of period <span class="rv-count">{{ data.stats.in_progress }}</span></h2>
+  {% for t in in_progress %}
+  <article class="rv-card {{ 'excluded' if not t.included }}">
+    <div class="rv-card-head">
+      <h3>{{ t.title }}</h3>
+      {{ include_box(t) }}
+    </div>
+    <div class="rv-meta">
+      <span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span>
+      <span>Started {{ t.created_at|d }}</span>
+      {% if t.closed_later %}<span class="rv-ok">Completed later, on {{ t.closed_later|d }}</span>
+      {% else %}<span class="badge s-{{ t.state }}">{{ t.state|capitalize }}</span>{% endif %}
+      {% if t.due_date %}<span class="{{ 'rv-late' if t.overdue_at_end }}">Due {{ t.due_date|d }}</span>{% endif %}
+    </div>
+    {% if t.state == 'depended' and t.depends_on and not t.closed_later %}<div class="rv-dep">Waiting on: {{ t.depends_on }}</div>{% endif %}
+    {% if t.closed_later and t.resolution %}<div class="rv-outcome"><b>Outcome (after this period)</b><div>{{ t.resolution }}</div></div>{% endif %}
+    {% if t.description %}<div class="rv-desc">{{ t.description }}</div>{% endif %}
+    {{ comments_block(t) }}
+  </article>
+  {% else %}
+  <p class="rv-empty">Nothing was in progress at the end of this period.</p>
+  {% endfor %}
+</section>

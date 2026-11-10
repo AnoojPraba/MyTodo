@@ -1,0 +1,25 @@
+# --- Personal data: NEVER commit (your tasks, comments, review notes) ---
+data/
+*.db
+*.db-journal
+*.sqlite
+mytodo-backup-*.json
+mytodo-review-*.html
+mytodo-review-*.csv
+mytodo-open-tasks-*.csv
+
+# --- Generated: recreated by run.bat / build_release.bat ---
+.venv/
+build/
+release/
+*.spec
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- Editor / OS clutter ---
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
