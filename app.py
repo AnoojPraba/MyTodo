@@ -30,7 +30,7 @@ import db
 import review
 import statuslog
 
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 FEEDBACK_EMAIL = "anooj.prabaharan@outlook.com"
 
 # When packaged as MyTodo.exe (PyInstaller), keep the data folder next to the exe,

@@ -2,6 +2,11 @@
 
 All notable changes to MyTodo. The newest version is first.
 
+## v1.3.3 (2026-11-11)
+
+- The page footer is now one compact line in a smaller font, with the version, copyright, Status & log and feedback email.
+- README screenshots updated to match.
+
 ## v1.3.2 (2026-11-11)
 
 ### Now available for Mac
