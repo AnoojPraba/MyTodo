@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Anooj Prabaharan. All rights reserved. */
 /* Performance review: shared by the in-app page and the downloadable .html file */
 .rv-doc { max-width: 900px; margin: 0 auto; }
 .rv-head { border-bottom: 2px solid var(--text); padding-bottom: .5rem; margin: 1.5rem 0 1rem; }
@@ -61,3 +62,7 @@ form.inline { display: inline; }
 .rv-outcome b { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--low); }
 .rv-outcome div { white-space: pre-wrap; }
 .rv-outcome.missing { border-left-color: var(--triage); font-size: .85rem; }
+
+.label-pill { display: inline-block; padding: .02rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600;
+  color: var(--lc); background: color-mix(in srgb, var(--lc) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lc) 35%, transparent); white-space: nowrap; }

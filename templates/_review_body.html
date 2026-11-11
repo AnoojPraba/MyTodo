@@ -1,3 +1,4 @@
+{#- Copyright (c) 2026 Anooj Prabaharan. All rights reserved. -#}
 {#- Shared review content. Expects: data, start, end, notes, comments, interactive (bool) -#}
 {% macro comments_block(t) %}
   {% if t.comments %}
@@ -49,6 +50,7 @@
     </div>
     <div class="rv-meta">
       <span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span>
+      {% for l in t.labels %}<span class="label-pill" style="--lc: {{ l.color }}">{{ l.name }}</span>{% endfor %}
       <span>Started {{ t.created_at|d }}</span>
       <span>Completed {{ t.closed_at|d }}</span>
       {% if t.days_taken is not none %}<span>{{ t.days_taken }} day{{ '' if t.days_taken == 1 else 's' }}</span>{% endif %}
@@ -75,6 +77,7 @@
     </div>
     <div class="rv-meta">
       <span class="badge p-{{ t.priority|lower }}">{{ t.priority }}</span>
+      {% for l in t.labels %}<span class="label-pill" style="--lc: {{ l.color }}">{{ l.name }}</span>{% endfor %}
       <span>Started {{ t.created_at|d }}</span>
       {% if t.closed_later %}<span class="rv-ok">Completed later, on {{ t.closed_later|d }}</span>
       {% else %}<span class="badge s-{{ t.state }}">{{ t.state|capitalize }}</span>{% endif %}

@@ -1,1 +1,2 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 flask>=3.0

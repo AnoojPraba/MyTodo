@@ -43,6 +43,7 @@
 - **Dashboard:** shows only open work. You see counts per state and how many tasks are overdue. You can filter, search and sort, and change a task's state straight from the list.
 - **History log:** every state change, edit and comment is recorded with a date and time. Entries cannot be edited or deleted.
 - **Comments:** add notes to any task as the work goes on.
+- **Labels:** tag tasks with coloured labels, such as a release (*Release 2026.1*), a team or a type (*Bug*). A task can have several. Filter the Dashboard, Closed list and Report by a label to see, for example, every open task in a release.
 - **Report:** lists all open tasks with their due date and latest comment. You can print it, save it as a PDF, or download it for Excel.
 - **Performance review:**
   - Pick a period, such as this year.
@@ -143,19 +144,25 @@ Started this way, MyTodo runs **inside that Command Prompt window** and prints i
 
 ## 6. A quick tour
 
-The top bar has five pages plus **+ New task** and **Quit**. The **Status & log** link is at the bottom of every page.
+The top bar has six pages plus **+ New task** and **Quit**. The **Status & log** link is at the bottom of every page.
 
 | Page | What you do there |
 |---|---|
 | **Dashboard** | See all open tasks. Click a count card to filter. Change a task's state from its dropdown. Choosing **Closed** asks for the closing summary. |
-| **+ New task** | Add a task: title, description, priority, due date and state. |
+| **+ New task** | Add a task: title, description, priority, due date, state and labels. |
 | *(task page)* | Click any task title. Here you can add comments, change the state, edit the task, and see its full history. |
 | **Closed** | Finished tasks, each with its closing summary. **Reopen** a task if it needs more work. |
-| **Report** | All open tasks with due dates and latest comments. Click **Print / Save as PDF** or **Download CSV**. |
+| **Labels** | All your labels, with how many open and closed tasks each has. Click a count to see those tasks. Create, rename, recolour or delete labels. Deleting a label keeps its tasks. |
+| **Report** | All open tasks with due dates and latest comments. Pick a label to get a status report for one release. Click **Print / Save as PDF** or **Download CSV**. |
 | **Review** | Your performance review. See the steps below. |
 | **Backup** | Download a backup, or restore from one. |
 | **Quit** | Stops MyTodo. Your work is already saved. Double-click `MyTodo.exe` to start it again. |
 | **Status & log** *(link at the bottom of every page)* | Version, address, data folder, last backup, and the log of what MyTodo has been doing, including any errors. Has **Open data folder** and **Download log** buttons. |
+
+### See the open tasks in a release
+1. When you add or edit a task, tick a label in **Labels**, or type a new one such as `Release 2026.1`.
+2. Open **Labels** and click the release's **open** count. The Dashboard now shows only that release's open tasks, and its count cards count only those tasks.
+3. For a shareable status report, click **report** next to the count, or choose the label on the **Report** page. Then print it, save it as a PDF, or download a CSV.
 
 ### Your yearly review in 5 steps
 1. Open **Review**. The period is filled in for you: from the day after your last saved review (or 1 January) up to today.
@@ -257,7 +264,7 @@ Python 3.10+, Flask, SQLite (built into Python), and plain HTML, CSS and JavaScr
 | Path | What it is |
 |---|---|
 | `app.py` | Flask app: all pages and routes, startup, port selection, `__version__` |
-| `db.py` | Database tables, upgrades for older databases, and task create/update. Every change writes to the history log. |
+| `db.py` | Database tables (tasks, comments, log, reviews, labels), upgrades for older databases, task create/update and labels. Every change writes to the history log. |
 | `backup.py` | JSON backup export and import (merge or replace), with validation |
 | `review.py` | Performance review: period logic, sections, stats, saved reviews, CSV |
 | `statuslog.py` | Reads the log file for the Status & log page |
@@ -313,3 +320,7 @@ See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 ## 11. Privacy
 
 MyTodo has **no accounts, no cloud, no tracking and no internet connection**. It runs a small web server that only your own computer can reach (`127.0.0.1`), and stores everything in the `data` folder next to the app. Your tasks leave your computer only if you share a backup or report yourself.
+
+---
+
+<sub>Copyright © 2026 Anooj Prabaharan. All rights reserved.</sub>

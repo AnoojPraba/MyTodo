@@ -1,9 +1,11 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """JSON export / import for MyTodo."""
 import json
 from datetime import datetime
 from pathlib import Path
 
-from db import STATES, PRIORITIES, _log, now
+from db import (LABEL_HEXES, PRIORITIES, STATES, _log, get_or_create_label, now,
+                parse_label_names)
 
 BACKUP_VERSION = 1
 TASK_COLS = ["id", "title", "description", "priority", "due_date", "state", "depends_on",
@@ -12,6 +14,8 @@ COMMENT_COLS = ["id", "task_id", "body", "created_at"]
 LOG_COLS = ["id", "task_id", "event_type", "old_value", "new_value", "detail", "created_at"]
 REVIEW_COLS = ["id", "start", "end", "notes", "exclude", "comments", "saved_at"]
 NOTE_COLS = ["period", "body", "updated_at"]
+LABEL_COLS = ["id", "name", "color"]
+TASK_LABEL_COLS = ["task_id", "label_id"]
 
 
 class BackupError(ValueError):
@@ -31,6 +35,8 @@ def export_data(conn):
         "log": rows("log", LOG_COLS),
         "reviews": rows("reviews", REVIEW_COLS),
         "review_notes": rows("review_notes", NOTE_COLS, order="period"),
+        "labels": rows("labels", LABEL_COLS),
+        "task_labels": rows("task_labels", TASK_LABEL_COLS, order="task_id, label_id"),
     }
 
 
@@ -81,7 +87,9 @@ def validate(data):
                 raise BackupError(f"A '{key}' entry refers to unknown task {row['task_id']}.")
     # optional sections (added in v1.1.0; older backups simply don't have them)
     for key, required in (("reviews", ("start", "end", "saved_at")),
-                          ("review_notes", ("period", "updated_at"))):
+                          ("review_notes", ("period", "updated_at")),
+                          ("labels", ("id", "name")),
+                          ("task_labels", ("task_id", "label_id"))):
         rows = data.get(key, [])
         if not isinstance(rows, list):
             raise BackupError(f"'{key}' must be a list.")
@@ -105,6 +113,8 @@ def import_data(conn, data, mode="merge"):
         conn.execute("DELETE FROM tasks")
         conn.execute("DELETE FROM reviews")
         conn.execute("DELETE FROM review_notes")
+        conn.execute("DELETE FROM task_labels")
+        conn.execute("DELETE FROM labels")
 
     ts = now()
     id_map = {}
@@ -146,6 +156,20 @@ def import_data(conn, data, mode="merge"):
             " updated_at = excluded.updated_at",
             (n["period"], n.get("body") or "", n["updated_at"]),
         )
+    # labels: matched by name (case-insensitive) so a merge never duplicates them
+    label_map = {}
+    for lbl in data.get("labels", []):
+        names = parse_label_names(lbl["name"])
+        if not names:
+            continue
+        row = get_or_create_label(conn, names[0])
+        if lbl.get("color") in LABEL_HEXES:
+            conn.execute("UPDATE labels SET color = ? WHERE id = ?", (lbl["color"], row["id"]))
+        label_map[lbl["id"]] = row["id"]
+    conn.executemany(
+        "INSERT OR IGNORE INTO task_labels (task_id, label_id) VALUES (?, ?)",
+        [(id_map[tl["task_id"]], label_map[tl["label_id"]]) for tl in data.get("task_labels", [])
+         if tl["task_id"] in id_map and tl["label_id"] in label_map])
     for new_id in id_map.values():
         _log(conn, new_id, "imported", new=mode, detail=f"Imported from backup ({mode})", at=ts)
     return len(id_map)

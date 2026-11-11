@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """In-app "Status & log" page, log parsing, footer badge and friendly error page."""
 import logging
 import sys

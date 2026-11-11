@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """Performance review: what was completed and what was in progress during a period.
 
 Tasks are selected purely by their dates (created_at / closed_at), so earlier
@@ -6,7 +7,7 @@ and choices made, and are rebuilt from the same data when viewed again.
 """
 from datetime import date, datetime, timedelta
 
-from db import now
+from db import now, task_labels
 
 COMMENT_MODES = ("latest", "all", "none")
 
@@ -130,6 +131,9 @@ def review_data(conn, start, end, exclude=frozenset(), comments="latest"):
         for t in group:
             t["included"] = t["id"] not in exclude
     _attach_comments(conn, completed_all + progress_all, lo, hi, comments)
+    labels = task_labels(conn, [t["id"] for t in completed_all + progress_all])
+    for t in completed_all + progress_all:
+        t["labels"] = labels[t["id"]]
 
     completed = [t for t in completed_all if t["included"]]
     in_progress = [t for t in progress_all if t["included"]]
@@ -208,7 +212,7 @@ def delete_review(conn, review_id):
 
 # ---------- CSV ----------
 
-CSV_HEADER = ["Section", "ID", "Task", "Priority", "State", "Started", "Completed",
+CSV_HEADER = ["Section", "ID", "Task", "Priority", "Labels", "State", "Started", "Completed",
               "Days taken", "Due date", "On time", "Closing summary", "Depends on", "Description",
               "Comments"]
 
@@ -216,13 +220,17 @@ CSV_HEADER = ["Section", "ID", "Task", "Priority", "State", "Started", "Complete
 def csv_rows(data):
     def comments_text(t):
         return "\n".join(f"[{c['created_at'][:10]}] {c['body']}" for c in t["comments"])
+    def labels_text(t):
+        return ", ".join(x["name"] for x in t.get("labels", []))
     for t in data["completed"]:
-        yield ["Completed", t["id"], t["title"], t["priority"], t["state"], t["created_at"][:10],
+        yield ["Completed", t["id"], t["title"], t["priority"], labels_text(t), t["state"],
+               t["created_at"][:10],
                t["closed_at"][:10], t["days_taken"] if t["days_taken"] is not None else "",
                t["due_date"] or "", {True: "Yes", False: "No", None: ""}[t["on_time"]],
                t["resolution"], "", t["description"], comments_text(t)]
     for t in data["in_progress"]:
-        yield ["In progress", t["id"], t["title"], t["priority"], t["state"], t["created_at"][:10],
+        yield ["In progress", t["id"], t["title"], t["priority"], labels_text(t), t["state"],
+               t["created_at"][:10],
                (t["closed_later"] or "")[:10], "", t["due_date"] or "", "",
                t["resolution"] if t["closed_later"] else "", t["depends_on"], t["description"],
                comments_text(t)]

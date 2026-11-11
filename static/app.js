@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 // Dashboard: changing a row's state submits immediately. Asks for a note when
 // "depended", and for the mandatory closing summary when "closed".
 const closeDialog = document.getElementById("close-dialog");

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """Read MyTodo's log file for the in-app "Status & log" page."""
 import re
 from pathlib import Path

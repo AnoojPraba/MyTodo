@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 import io
 import json
 import sys

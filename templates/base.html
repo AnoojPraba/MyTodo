@@ -1,3 +1,4 @@
+{#- Copyright (c) 2026 Anooj Prabaharan. All rights reserved. -#}
 <!doctype html>
 <html lang="en">
 <head>
@@ -16,6 +17,7 @@
   <nav>
     <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
     <a href="{{ url_for('closed') }}" class="{{ 'active' if request.endpoint == 'closed' }}">Closed</a>
+    <a href="{{ url_for('labels_page') }}" class="{{ 'active' if request.endpoint == 'labels_page' }}">Labels</a>
     <a href="{{ url_for('report') }}" class="{{ 'active' if request.endpoint == 'report' }}">Report</a>
     <a href="{{ url_for('review_page') }}" class="{{ 'active' if request.endpoint in ('review_page', 'review_saved') }}">Review</a>
     <a href="{{ url_for('backup_page') }}" class="{{ 'active' if request.endpoint == 'backup_page' }}">Backup</a>
@@ -35,9 +37,11 @@
   {% block content %}{% endblock %}
 </main>
 <footer class="app-foot no-print">
-  MyTodo {{ app_version }} ·
+  MyTodo {{ app_version }} · © 2026 Anooj Prabaharan ·
   <a href="{{ url_for('status') }}" class="{{ 'active' if request.endpoint == 'status' }}">Status &amp; log</a>{% if log_problems %}
   <a href="{{ url_for('status', show='problems') }}" class="foot-alert" title="Warnings or errors in the log">⚠ {{ log_problems }}</a>{% endif %}
+  <span class="foot-feedback">Ideas, changes or improvements? Email
+    <a href="mailto:{{ FEEDBACK_EMAIL }}?subject={{ ('MyTodo feedback (v' ~ app_version ~ ')')|urlencode }}">{{ FEEDBACK_EMAIL }}</a></span>
 </footer>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

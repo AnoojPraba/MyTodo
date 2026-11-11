@@ -2,6 +2,21 @@
 
 All notable changes to MyTodo. The newest version is first.
 
+## Unreleased
+
+### Labels
+- Tag tasks with **coloured labels**, such as a release, a team or a type. A task can have several.
+- On the task form, tick existing labels or type new ones, separated by commas. Capitals don't matter, so `bug` and `Bug` are the same label.
+- **Filter by label** on the Dashboard (the count cards follow the filter), the Closed list and the Report. The report CSV is filtered too and gets a Labels column, which makes a per-release status report.
+- New **Labels** page: open and closed counts for each label, plus create, rename, recolour and delete. Deleting a label keeps its tasks.
+- Label changes, including renames and deletes, appear in each task's history.
+- Labels appear on performance review cards and in the review CSV.
+- Backups include labels. A merge matches labels by name, so it never creates duplicates, and older backups still import.
+
+### Other
+- A footer link on every page invites ideas and improvements by email.
+- A copyright notice is in every source file and in the app footer.
+
 ## v1.3.0 (2026-11-11)
 
 ### Runs in the background
@@ -43,3 +58,7 @@ All notable changes to MyTodo. The newest version is first.
 - Open-tasks report: print, PDF and CSV.
 - JSON backup and restore (merge or replace), plus automatic backups at startup.
 - Standalone Windows `MyTodo.exe`: nothing to install. If port 5000 is busy, it picks the next free port.
+
+---
+
+<sub>Copyright © 2026 Anooj Prabaharan. All rights reserved.</sub>

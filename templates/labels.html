@@ -1,0 +1,52 @@
+{#- Copyright (c) 2026 Anooj Prabaharan. All rights reserved. -#}
+{% extends "base.html" %}
+{% block title %}Labels · MyTodo{% endblock %}
+{% block content %}
+<h1>Labels</h1>
+<p class="muted">Group tasks however your team works: by release (<i>Release 2026.1</i>), by team, by type (<i>Bug</i>, <i>Feature</i>)…
+  A task can have several labels. Click a count to see those tasks; the Dashboard, Closed and Report pages can all be filtered by label.</p>
+
+<form method="post" action="{{ url_for('labels_create') }}" class="panel label-new">
+  <label>New label <input name="name" maxlength="40" required placeholder="e.g. Release 2026.2"></label>
+  <label>Colour
+    <select name="color">
+      <option value="">Automatic</option>
+      {% for cname, hex in LABEL_COLORS %}<option value="{{ hex }}">{{ cname }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="btn primary">Add label</button>
+</form>
+
+{% if labels %}
+<table class="tasks labels-table">
+  <thead><tr><th>Label</th><th>Open</th><th>Closed</th><th>Edit</th><th></th></tr></thead>
+  <tbody>
+  {% for l in labels %}
+    <tr>
+      <td><a class="label-pill" style="--lc: {{ l.color }}" href="{{ url_for('dashboard', label=l.id) }}">{{ l.name }}</a></td>
+      <td><a href="{{ url_for('dashboard', label=l.id) }}" title="Open tasks labelled {{ l.name }}">{{ l.n_open }} open</a>
+        {% if l.n_open %}<span class="muted small">· <a href="{{ url_for('report', label=l.id) }}">report</a></span>{% endif %}</td>
+      <td><a href="{{ url_for('closed', label=l.id) }}" class="muted">{{ l.n_closed }} closed</a></td>
+      <td>
+        <form method="post" action="{{ url_for('labels_edit', label_id=l.id) }}" class="label-edit">
+          <input name="name" value="{{ l.name }}" maxlength="40" required aria-label="Name">
+          <select name="color" aria-label="Colour">
+            {% for cname, hex in LABEL_COLORS %}<option value="{{ hex }}" {{ 'selected' if hex == l.color }}>{{ cname }}</option>{% endfor %}
+          </select>
+          <button class="btn small">Save</button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('labels_delete', label_id=l.id) }}" class="inline confirm-form"
+              data-confirm="Delete the label “{{ l.name }}”?&#10;&#10;It is removed from {{ l.n_open + l.n_closed }} task(s). The tasks themselves are kept.">
+          <button class="btn small ghost">Delete</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No labels yet. Add one above, or type labels straight into a task's <b>Labels</b> box.</div>
+{% endif %}
+{% endblock %}

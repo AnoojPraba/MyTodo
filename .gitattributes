@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 # Normalise text files; keep Windows batch files with CRLF so they run after cloning
 * text=auto
 *.bat text eol=crlf

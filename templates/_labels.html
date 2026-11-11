@@ -1,0 +1,31 @@
+{#- Copyright (c) 2026 Anooj Prabaharan. All rights reserved. -#}
+{#- Label pills. `link` = endpoint to filter by the label (e.g. 'dashboard'), or none for plain pills. -#}
+{% macro pills(labels, link=None) -%}
+  {%- if labels %}<span class="label-pills">
+    {%- for l in labels -%}
+      {%- if link %}<a class="label-pill" style="--lc: {{ l.color }}" href="{{ url_for(link, label=l.id) }}" title="Show tasks labelled {{ l.name }}">{{ l.name }}</a>
+      {%- else %}<span class="label-pill" style="--lc: {{ l.color }}">{{ l.name }}</span>{% endif -%}
+    {%- endfor -%}
+  </span>{% endif -%}
+{%- endmacro %}
+
+{#- Dropdown to filter a list by label (inside an auto-submit form). -#}
+{% macro filter_select(current) -%}
+  {%- set labels = all_labels() -%}
+  {%- if labels %}
+  <select name="label" aria-label="Filter by label">
+    <option value="">All labels</option>
+    {% for l in labels %}<option value="{{ l.id }}" {{ 'selected' if current and current.id == l.id }}>{{ l.name }}</option>{% endfor %}
+  </select>
+  {%- endif -%}
+{%- endmacro %}
+
+{#- Banner shown when a list is filtered by a label. -#}
+{% macro active_banner(label, clear_url, noun="tasks") -%}
+  {%- if label %}
+  <div class="label-banner">
+    Showing {{ noun }} labelled <span class="label-pill" style="--lc: {{ label.color }}">{{ label.name }}</span>
+    <a href="{{ clear_url }}" class="small">Show all</a>
+  </div>
+  {%- endif -%}
+{%- endmacro %}

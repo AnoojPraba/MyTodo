@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """MyTodo - personal task tracker.
 
 Run: python app.py  (opens http://127.0.0.1:5000, or the next free port).
@@ -8,6 +9,7 @@ import io
 import json
 import logging
 import os
+import re
 import socket
 import sys
 import threading
@@ -27,6 +29,7 @@ import review
 import statuslog
 
 __version__ = "1.3.0"
+FEEDBACK_EMAIL = "anooj.prabaharan@outlook.com"
 
 # When packaged as MyTodo.exe (PyInstaller), keep the data folder next to the exe,
 # not in the temporary folder the exe unpacks itself into.
@@ -79,7 +82,10 @@ def create_app(data_dir=None):
     def inject():
         return {"STATES": db.STATES, "PRIORITIES": db.PRIORITIES, "MIN_RESOLUTION": db.MIN_RESOLUTION,
                 "today": date.today().isoformat(), "can_quit": bool(app.config.get("SHUTDOWN")),
-                "app_version": __version__, "log_problems": PROBLEMS.count}
+                "app_version": __version__, "log_problems": PROBLEMS.count,
+                "all_labels": lambda: db.list_labels(get_conn()),
+                "LABEL_COLORS": db.LABEL_COLORS,
+                "FEEDBACK_EMAIL": FEEDBACK_EMAIL}
 
     @app.template_filter("dt")
     def fmt_dt(value):
@@ -101,6 +107,22 @@ def create_app(data_dir=None):
         except ValueError:
             return value
 
+    def current_label():
+        """The ?label=<id> filter, as a label row (or None)."""
+        label_id = request.args.get("label", type=int)
+        return db.get_label(get_conn(), label_id) if label_id else None
+
+    def task_fields():
+        """Form data for create/update. Labels are only included when the form edits them."""
+        fields = request.form.to_dict()
+        if "labels_field" in request.form:
+            fields["labels"] = request.form.getlist("labels") + [request.form.get("new_labels", "")]
+        return fields
+
+    def form_label_names():
+        return db.parse_label_names(request.form.getlist("labels")
+                                    + [request.form.get("new_labels", "")])
+
     def back(default="dashboard"):
         target = request.form.get("next") or request.args.get("next")
         if target and target.startswith("/") and not target.startswith("//"):
@@ -112,17 +134,22 @@ def create_app(data_dir=None):
     @app.get("/")
     def dashboard():
         conn = get_conn()
-        f = {k: request.args.get(k, "") for k in ("state", "priority", "q", "sort")}
+        f = {k: request.args.get(k, "") for k in ("state", "priority", "q", "sort", "label")}
+        label = current_label()
+        lid = label["id"] if label else None
         tasks = db.list_tasks(conn, state=f["state"] or None, priority=f["priority"] or None,
-                              q=f["q"].strip() or None, sort=f["sort"] or "due")
-        return render_template("dashboard.html", tasks=tasks, counts=db.counts(conn), f=f)
+                              q=f["q"].strip() or None, sort=f["sort"] or "due", label=lid)
+        return render_template("dashboard.html", tasks=tasks, counts=db.counts(conn, label=lid),
+                               f=f, label=label, tl=db.task_labels(conn, [t["id"] for t in tasks]))
 
     @app.get("/closed")
     def closed():
         conn = get_conn()
         q = request.args.get("q", "").strip()
-        tasks = db.list_tasks(conn, closed=True, q=q or None)
-        return render_template("closed.html", tasks=tasks, q=q)
+        label = current_label()
+        tasks = db.list_tasks(conn, closed=True, q=q or None, label=label["id"] if label else None)
+        return render_template("closed.html", tasks=tasks, q=q, label=label,
+                               tl=db.task_labels(conn, [t["id"] for t in tasks]))
 
     @app.route("/task/new", methods=["GET", "POST"])
     def task_new():
@@ -130,21 +157,24 @@ def create_app(data_dir=None):
             conn = get_conn()
             try:
                 with conn:
-                    task_id = db.create_task(conn, request.form)
+                    task_id = db.create_task(conn, task_fields())
             except ValueError as e:
                 flash(str(e), "error")
-                return render_template("task_form.html", task=request.form, is_new=True), 400
+                return render_template("task_form.html", task=request.form, is_new=True,
+                                       task_label_names=form_label_names()), 400
             flash("Task created.", "ok")
             return redirect(url_for("task_detail", task_id=task_id))
+        preset = [lbl["name"]] if (lbl := current_label()) else []
         return render_template("task_form.html", task={"priority": "Medium", "state": "new"},
-                               is_new=True)
+                               is_new=True, task_label_names=preset)
 
     @app.get("/task/<int:task_id>")
     def task_detail(task_id):
         conn = get_conn()
         task = db.get_task(conn, task_id) or abort(404)
         return render_template("task_detail.html", task=task,
-                               timeline=db.timeline(conn, task_id))
+                               timeline=db.timeline(conn, task_id),
+                               labels=db.task_labels(conn, [task_id])[task_id])
 
     @app.route("/task/<int:task_id>/edit", methods=["GET", "POST"])
     def task_edit(task_id):
@@ -153,14 +183,16 @@ def create_app(data_dir=None):
         if request.method == "POST":
             try:
                 with conn:
-                    db.update_task(conn, task_id, request.form)
+                    db.update_task(conn, task_id, task_fields())
             except ValueError as e:
                 flash(str(e), "error")
                 data = dict(request.form, id=task_id)
-                return render_template("task_form.html", task=data, is_new=False), 400
+                return render_template("task_form.html", task=data, is_new=False,
+                                       task_label_names=form_label_names()), 400
             flash("Task updated.", "ok")
             return redirect(url_for("task_detail", task_id=task_id))
-        return render_template("task_form.html", task=task, is_new=False)
+        return render_template("task_form.html", task=task, is_new=False,
+                               task_label_names=db.label_names(conn, task_id))
 
     @app.post("/task/<int:task_id>/state")
     def task_state(task_id):
@@ -208,26 +240,76 @@ def create_app(data_dir=None):
 
     @app.get("/report")
     def report():
-        rows = db.report_rows(get_conn())
-        return render_template("report.html", rows=rows, generated=datetime.now())
+        conn = get_conn()
+        label = current_label()
+        rows = db.report_rows(conn, label=label["id"] if label else None)
+        return render_template("report.html", rows=rows, generated=datetime.now(), label=label,
+                               tl=db.task_labels(conn, [r["id"] for r in rows]))
 
     @app.get("/report.csv")
     def report_csv():
-        rows = db.report_rows(get_conn())
+        conn = get_conn()
+        label = current_label()
+        rows = db.report_rows(conn, label=label["id"] if label else None)
+        tl = db.task_labels(conn, [r["id"] for r in rows])
         buf = io.StringIO()
         w = csv.writer(buf)
-        w.writerow(["ID", "Task", "State", "Priority", "Due date", "Overdue",
+        w.writerow(["ID", "Task", "State", "Priority", "Labels", "Due date", "Overdue",
                     "Depends on", "Last comment", "Last comment at"])
         today = date.today().isoformat()
         for r in rows:
-            w.writerow([r["id"], r["title"], r["state"], r["priority"], r["due_date"] or "",
+            w.writerow([r["id"], r["title"], r["state"], r["priority"],
+                        ", ".join(x["name"] for x in tl[r["id"]]), r["due_date"] or "",
                         "Yes" if r["due_date"] and r["due_date"] < today else "",
                         r["depends_on"], r["last_comment"] or "",
                         (r["last_comment_at"] or "").replace("T", " ")])
-        name = f"mytodo-open-tasks-{datetime.now():%Y%m%d}.csv"
+        suffix = f"-{re.sub(r'[^A-Za-z0-9._-]+', '-', label['name']).strip('-')}" if label else ""
+        name = f"mytodo-open-tasks{suffix}-{datetime.now():%Y%m%d}.csv"
         # BOM so Excel opens UTF-8 correctly
         return Response("﻿" + buf.getvalue(), mimetype="text/csv",
                         headers={"Content-Disposition": f"attachment; filename={name}"})
+
+    # ---------- labels ----------
+
+    @app.get("/labels")
+    def labels_page():
+        return render_template("labels.html", labels=db.list_labels(get_conn()))
+
+    @app.post("/labels")
+    def labels_create():
+        conn = get_conn()
+        try:
+            with conn:
+                db.create_label(conn, request.form.get("name"), request.form.get("color") or None)
+        except ValueError as e:
+            flash(str(e), "error")
+        else:
+            flash("Label created.", "ok")
+        return redirect(url_for("labels_page"))
+
+    @app.post("/labels/<int:label_id>/edit")
+    def labels_edit(label_id):
+        conn = get_conn()
+        db.get_label(conn, label_id) or abort(404)
+        try:
+            with conn:
+                db.rename_label(conn, label_id, request.form.get("name"))
+                if request.form.get("color"):
+                    db.recolor_label(conn, label_id, request.form.get("color"))
+        except ValueError as e:
+            flash(str(e), "error")
+        else:
+            flash("Label saved.", "ok")
+        return redirect(url_for("labels_page"))
+
+    @app.post("/labels/<int:label_id>/delete")
+    def labels_delete(label_id):
+        conn = get_conn()
+        label = db.get_label(conn, label_id) or abort(404)
+        with conn:
+            db.delete_label(conn, label_id)
+        flash(f"Label “{label['name']}” deleted. Its tasks were kept.", "ok")
+        return redirect(url_for("labels_page"))
 
     # ---------- performance review ----------
 

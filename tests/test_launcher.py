@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """Windowless launcher: finding a running copy on the right port, Quit, logging."""
 import logging
 import socket

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """Generate MyTodo's logo files from one geometry.
 
     static/icon.svg   header logo + browser tab icon (vector)
@@ -41,7 +42,8 @@ def arrow_geometry():
 def svg():
     tip, left, right, shaft_end = arrow_geometry()
     f = lambda p: f"{p[0]:.1f} {p[1]:.1f}"  # noqa: E731
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="MyTodo">
+    return f"""<!-- Copyright (c) 2026 Anooj Prabaharan. All rights reserved. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="MyTodo">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="{C1}"/>

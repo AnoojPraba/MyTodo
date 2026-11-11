@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 """Build a MyTodo release:  release/MyTodo-v<version>/  +  release/MyTodo-v<version>.zip
 
     MyTodo.exe   standalone app (Python + Flask bundled; nothing to install)
@@ -97,6 +98,9 @@ FIRST START WARNINGS
   code-signed: click "More info" -> "Run anyway".
   If Windows Firewall asks, you can click Cancel: MyTodo only listens on this
   computer (127.0.0.1) and needs no network access.
+
+COPYRIGHT
+  Copyright (c) 2026 Anooj Prabaharan. All rights reserved.
 
 SOURCE CODE
   source\\ contains the Python code. To run from source instead of the exe
