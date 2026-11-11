@@ -51,6 +51,8 @@
   - Share it as a **PDF**, as an **HTML file** you can email, or as a **CSV** for Excel.
   - Save each review, so that next year's review starts where this one ended.
 - **Backup and restore:** save everything to one file and load it back whenever you need to.
+- **Runs quietly in the background:** no extra windows. It opens in your Windows default browser and has a **Quit** button to stop it.
+- **Status & log:** one page shows the version, address and data folder, plus a log of anything that went wrong, to make troubleshooting easy.
 - **Private:** everything stays on your computer. There is no account, no cloud and no internet connection.
 
 ---
@@ -105,10 +107,10 @@ You also need an **internet connection the first time** you run MyTodo from the 
 2. Unzip it to a permanent place, for example `Documents\MyTodo`. Don't run it from inside the zip file.
 3. Double-click **`MyTodo.exe`**.
 4. **The first time,** Windows may show a blue box saying **"Windows protected your PC"**. This happens because the app is not signed with a paid Microsoft certificate, not because anything is wrong. Click **More info**, then **Run anyway**.
-5. A black window opens, and then MyTodo opens in your browser.
+5. MyTodo opens in your **default browser**, the one Windows is set to use. No other window appears; MyTodo runs quietly in the background.
 
-> **Keep the black window open while you use MyTodo.** Closing the window stops the app.
-> To open MyTodo again later, double-click `MyTodo.exe` again.
+> **Closed the browser tab?** MyTodo is still running. Double-click `MyTodo.exe` again and it reopens at the right address.
+> **To stop MyTodo,** click **Quit** at the top right of the app. Your work is always saved.
 
 ---
 
@@ -116,9 +118,9 @@ You also need an **internet connection the first time** you run MyTodo from the 
 
 1. Install Python and get the code, as described in [section 3](#3-what-you-need-requirements).
 2. Open the MyTodo folder and double-click **`run.bat`**.
-   - The **first run takes a minute or two** while it sets things up. This is normal.
+   - The **first run takes a minute or two** while it sets things up, and a setup window shows progress. This is normal.
    - Later runs start in a few seconds.
-3. MyTodo opens in your browser. As with Option A, keep the black window open while you use it.
+3. MyTodo opens in your browser and runs in the background, just like Option A. Use **Quit** in the app to stop it.
 
 <details>
 <summary><b>Prefer typing commands?</b> (click to expand)</summary>
@@ -133,13 +135,15 @@ python app.py
 ```
 
 The first command creates a *virtual environment*: a private folder (`.venv`) that holds MyTodo's libraries, so they don't mix with anything else on your computer.
+
+Started this way, MyTodo runs **inside that Command Prompt window** and prints its messages there, which is handy while developing. Stop it with **Quit** in the app, or by pressing **Ctrl+C** in the window. Next time you only need the last command (after `.venv\Scripts\activate`).
 </details>
 
 ---
 
 ## 6. A quick tour
 
-The top bar has six pages and a button for adding tasks:
+The top bar has five pages plus **+ New task** and **Quit**. The **Status & log** link is at the bottom of every page.
 
 | Page | What you do there |
 |---|---|
@@ -150,6 +154,8 @@ The top bar has six pages and a button for adding tasks:
 | **Report** | All open tasks with due dates and latest comments. Click **Print / Save as PDF** or **Download CSV**. |
 | **Review** | Your performance review. See the steps below. |
 | **Backup** | Download a backup, or restore from one. |
+| **Quit** | Stops MyTodo. Your work is already saved. Double-click `MyTodo.exe` to start it again. |
+| **Status & log** *(link at the bottom of every page)* | Version, address, data folder, last backup, and the log of what MyTodo has been doing, including any errors. Has **Open data folder** and **Download log** buttons. |
 
 ### Your yearly review in 5 steps
 1. Open **Review**. The period is filled in for you: from the day after your last saved review (or 1 January) up to today.
@@ -169,6 +175,8 @@ The top bar has six pages and a button for adding tasks:
 | File | Contents |
 |---|---|
 | `data\mytodo.db` | All your tasks, comments, history and reviews |
+| `data\mytodo.log` | A log of starts, stops and any errors. Useful when asking for help. |
+| `data\mytodo.port` | Only exists while MyTodo is running: the port number it's using |
 | `data\backups\` | Backup files. `auto-…` files are made each time MyTodo starts, and the newest 10 are kept. `pre-import-…` files are safety copies made just before you restore a backup. |
 
 **To make a backup:** go to **Backup**, then click **Download backup**. Keep the file somewhere safe, such as OneDrive or a USB stick.
@@ -188,7 +196,7 @@ The file is checked before anything changes, and a safety copy of your current d
 ## 8. Upgrading to a new version
 
 1. Optional but recommended: make a backup first (**Backup → Download backup**).
-2. Close MyTodo's black window.
+2. Stop MyTodo: click **Quit** at the top right of the app.
 3. Replace the old `MyTodo.exe` with the new one. **Leave the `data` folder where it is.**
 4. Start MyTodo. Your existing data is upgraded automatically, and backups from older versions still restore.
 
@@ -196,14 +204,22 @@ The file is checked before anything changes, and a safety copy of your current d
 
 ## 9. Troubleshooting
 
-**The browser didn't open.**
-Look in the black window for a line such as `MyTodo 1.2.0 running at http://127.0.0.1:5000`. Copy that address into your browser.
+> **First stop for any problem: the Status & log page.** Click **Status & log** at the bottom of any page. It shows the address MyTodo is using and where your data is, and lists what happened, including errors. Choose **Warnings & errors only** to see just the problems. If you need help from someone, click **Download log** and send them the file. When something goes wrong, a red **⚠** number also appears next to that link.
 
-**It says "Port 5000 is used by another program, trying 5001…"**
-Nothing is wrong. Another program on your computer is using that *port* (a numbered connection point), so MyTodo picks the next free one. The black window shows which address it is using.
+**The browser didn't open.**
+Open the `data` folder next to `MyTodo.exe`. The file **`mytodo.port`** contains the number MyTodo is using, for example `5000`. Type `http://127.0.0.1:5000` into your browser, replacing `5000` with that number. The log file **`mytodo.log`** in the same folder also records the address and any problems.
+
+**Which browser does MyTodo use?**
+Whichever browser Windows is set to use by default. To change it, open **Settings → Apps → Default apps**. MyTodo follows your choice automatically, and nothing breaks if you uninstall a browser.
+
+**MyTodo isn't on port 5000.**
+Nothing is wrong. Another program on your computer was using that *port* (a numbered connection point), so MyTodo picked the next free one. It always opens your browser on the port it is really using.
 
 **Double-clicking MyTodo again only opens a browser tab.**
 That's expected. MyTodo is already running, so it just opens the existing one for you.
+
+**How do I know if MyTodo is running?**
+Double-click `MyTodo.exe`. If it's running, your browser opens it; if not, it starts. You can also look for **MyTodo** in Task Manager.
 
 **"Windows protected your PC" appears.**
 Click **More info**, then **Run anyway**. See [Option A, step 4](#4-option-a-use-the-ready-made-app-easiest).
@@ -211,8 +227,14 @@ Click **More info**, then **Run anyway**. See [Option A, step 4](#4-option-a-use
 **A Windows Firewall message appears.**
 You can click **Cancel**. MyTodo only talks to your own computer (`127.0.0.1`) and needs no network access.
 
-**I closed the black window and MyTodo stopped working.**
-That's how it works: the window *is* the app. Double-click `MyTodo.exe` (or `run.bat`) to start it again. Nothing is lost.
+**I clicked Quit by mistake.**
+Double-click `MyTodo.exe` (or `run.bat`) to start it again. Nothing is lost, because every change is saved immediately.
+
+**MyTodo shows an error box and won't start.**
+The message says what went wrong. Because the app isn't running, the Status & log page isn't available, so open `data\mytodo.log` in Notepad for the details.
+
+**A page says "Something went wrong".**
+Your saved data is not affected. Click **Open Status & log** on that page to see the error details, or download the log to share it.
 
 **"A closing summary is required to close a task".**
 Write at least a sentence (10 characters or more) describing the outcome. It is used in your performance review.
@@ -238,6 +260,7 @@ Python 3.10+, Flask, SQLite (built into Python), and plain HTML, CSS and JavaScr
 | `db.py` | Database tables, upgrades for older databases, and task create/update. Every change writes to the history log. |
 | `backup.py` | JSON backup export and import (merge or replace), with validation |
 | `review.py` | Performance review: period logic, sections, stats, saved reviews, CSV |
+| `statuslog.py` | Reads the log file for the Status & log page |
 | `templates/` | HTML pages (Jinja2 templates) |
 | `static/` | CSS, JavaScript and logo files |
 | `tests/` | Automated tests (pytest) |
@@ -278,6 +301,9 @@ This rewrites `static/icon.svg`, `static/icon.png`, `static/favicon.ico` and `ic
 | `MYTODO_PORT` | `5000` | First port to try. MyTodo tries up to 20 ports from here. |
 | `MYTODO_DATA` | `data` next to the app | Where the database and backups are stored |
 | `MYTODO_NO_BROWSER` | *(not set)* | Set it to `1` to stop MyTodo opening the browser at startup |
+
+### Version history
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 
 ### What not to commit
 `data/`, `.venv/`, `build/` and `release/` are listed in `.gitignore`. Keep it that way: `data/` holds personal work information, and the other three are recreated by the scripts.

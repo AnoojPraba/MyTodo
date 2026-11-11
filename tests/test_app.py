@@ -209,10 +209,10 @@ def test_choose_port_skips_foreign_and_detects_mytodo(monkeypatch):
     import app as app_module
     busy = {5000: "other", 5001: "mytodo"}
     monkeypatch.setattr(app_module, "port_in_use", lambda p: p in busy)
-    monkeypatch.setattr(app_module, "is_mytodo", lambda p: busy.get(p) == "mytodo")
-    assert app_module.choose_port(5000) == (5001, True)   # skips 5000, finds running MyTodo
+    monkeypatch.setattr(app_module, "is_mytodo", lambda p, db_path: busy.get(p) == "mytodo")
+    assert app_module.choose_port(5000, "x.db") == (5001, True)   # skips 5000, finds MyTodo
     busy[5001] = "other"
-    assert app_module.choose_port(5000) == (5002, False)  # both taken by others -> 5002
+    assert app_module.choose_port(5000, "x.db") == (5002, False)  # both taken -> 5002
 
 
 def test_identify_endpoint(client):

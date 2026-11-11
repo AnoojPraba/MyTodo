@@ -137,3 +137,26 @@ table.tasks { width: 100%; border-collapse: collapse; background: var(--panel); 
 .close-dialog::backdrop { background: rgb(0 0 0 / .45); }
 .close-dialog h2 { margin-top: 0; }
 .close-dialog textarea { width: 100%; margin-bottom: .75rem; }
+
+/* Quit button in the top bar */
+form.inline { display: inline; }
+.quit-form .btn { color: var(--muted); }
+.quit-form .btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* footer + status & log */
+.app-foot { max-width: 1150px; margin: 0 auto; padding: 0 1rem 1.5rem; color: var(--muted); font-size: .85rem; }
+.app-foot a { color: var(--muted); text-decoration: underline; }
+.app-foot a.foot-alert { color: var(--danger); font-weight: 600; text-decoration: none; margin-left: .4rem; }
+.status-grid { margin-bottom: 1.5rem; }
+.status-grid code { font-size: .85rem; }
+.log-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.log-head .filters { margin: 0; }
+.log-table td { vertical-align: top; }
+.log-msg { white-space: pre-wrap; word-break: break-word; }
+.log-table pre { white-space: pre-wrap; word-break: break-word; font-size: .8rem; background: var(--bg);
+  padding: .5rem .7rem; border-radius: 6px; margin: .4rem 0 0; max-height: 320px; overflow: auto; }
+.lvl { font-size: .78rem; font-weight: 600; padding: .05rem .5rem; border-radius: 999px;
+  color: var(--c, var(--muted)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); }
+.lvl-warning { --c: var(--triage); }
+.lvl-error, .lvl-critical { --c: var(--danger); }
+.lvl-error td, .lvl-critical td { background: color-mix(in srgb, var(--danger) 5%, transparent); }

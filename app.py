@@ -1,7 +1,12 @@
-"""MyTodo - personal task tracker. Run: python app.py  (opens http://127.0.0.1:5000)"""
+"""MyTodo - personal task tracker.
+
+Run: python app.py  (opens http://127.0.0.1:5000, or the next free port).
+The packaged MyTodo.exe runs with no console window; use "Quit" in the app to stop it.
+"""
 import csv
 import io
 import json
+import logging
 import os
 import socket
 import sys
@@ -9,16 +14,19 @@ import threading
 import urllib.request
 import webbrowser
 from datetime import date, datetime, timedelta
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from flask import (Flask, Response, abort, flash, g, redirect, render_template, request,
                    url_for)
+from werkzeug.serving import make_server
 
 import backup
 import db
 import review
+import statuslog
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 # When packaged as MyTodo.exe (PyInstaller), keep the data folder next to the exe,
 # not in the temporary folder the exe unpacks itself into.
@@ -27,6 +35,21 @@ if getattr(sys, "frozen", False):
 else:
     BASE_DIR = Path(__file__).resolve().parent
 
+log = logging.getLogger("mytodo")
+
+
+class _ProblemCounter(logging.Handler):
+    """Counts warnings/errors logged since this start (shown as a badge in the footer)."""
+    def __init__(self):
+        super().__init__(level=logging.WARNING)
+        self.count = 0
+
+    def emit(self, record):
+        self.count += 1
+
+
+PROBLEMS = _ProblemCounter()
+
 
 def create_app(data_dir=None):
     app = Flask(__name__)
@@ -34,6 +57,7 @@ def create_app(data_dir=None):
     data_dir.mkdir(parents=True, exist_ok=True)
     app.config.update(
         SECRET_KEY="mytodo-local-only",
+        DATA_DIR=str(data_dir),
         DB_PATH=str(data_dir / "mytodo.db"),
         BACKUP_DIR=str(data_dir / "backups"),
         MAX_CONTENT_LENGTH=20 * 1024 * 1024,
@@ -54,7 +78,8 @@ def create_app(data_dir=None):
     @app.context_processor
     def inject():
         return {"STATES": db.STATES, "PRIORITIES": db.PRIORITIES, "MIN_RESOLUTION": db.MIN_RESOLUTION,
-                "today": date.today().isoformat()}
+                "today": date.today().isoformat(), "can_quit": bool(app.config.get("SHUTDOWN")),
+                "app_version": __version__, "log_problems": PROBLEMS.count}
 
     @app.template_filter("dt")
     def fmt_dt(value):
@@ -166,8 +191,18 @@ def create_app(data_dir=None):
 
     @app.get("/__mytodo")
     def identify():
-        # lets a second launch recognise an already-running MyTodo on a port
-        return Response(f"MyTodo {__version__}", mimetype="text/plain")
+        # lets a second launch recognise an already-running MyTodo on a port,
+        # and check it is using the same data folder (not another copy of the app)
+        return Response(f"MyTodo {__version__}\n{app.config['DB_PATH']}", mimetype="text/plain")
+
+    @app.post("/quit")
+    def quit_app():
+        shutdown = app.config.get("SHUTDOWN")
+        if not shutdown:
+            flash("Quit is only available when MyTodo is started as an app.", "error")
+            return redirect(url_for("dashboard"))
+        shutdown()
+        return render_template("quit.html", version=__version__)
 
     # ---------- report ----------
 
@@ -296,6 +331,60 @@ def create_app(data_dir=None):
         flash("Saved review deleted. Your tasks were not changed.", "ok")
         return redirect(url_for("review_page"))
 
+    # ---------- status & log ----------
+
+    @app.get("/status")
+    def status():
+        conn = get_conn()
+        folder = Path(app.config["DATA_DIR"])
+        problems = request.args.get("show") == "problems"
+        backups = sorted(Path(app.config["BACKUP_DIR"]).glob("*.json"),
+                         key=lambda p: p.stat().st_mtime, reverse=True) \
+            if Path(app.config["BACKUP_DIR"]).exists() else []
+        info = {
+            "version": __version__,
+            "url": request.host_url.rstrip("/"),
+            "data_dir": str(folder),
+            "db_size": statuslog.human_size(statuslog.folder_size(app.config["DB_PATH"])),
+            "tasks_open": conn.execute(
+                "SELECT COUNT(*) FROM tasks WHERE state != 'closed'").fetchone()[0],
+            "tasks_closed": conn.execute(
+                "SELECT COUNT(*) FROM tasks WHERE state = 'closed'").fetchone()[0],
+            "last_backup": datetime.fromtimestamp(backups[0].stat().st_mtime) if backups else None,
+            "log_path": str(folder / statuslog.LOG_FILE),
+            "python": sys.version.split()[0],
+            "packaged": bool(getattr(sys, "frozen", False)),
+        }
+        entries = statuslog.read_log(folder, problems_only=problems)
+        n_problems = len(statuslog.read_log(folder, problems_only=True))
+        return render_template("status.html", info=info, entries=entries, problems=problems,
+                               n_problems=n_problems)
+
+    @app.get("/status/log.txt")
+    def status_log_download():
+        folder = Path(app.config["DATA_DIR"])
+        header = (f"MyTodo {__version__} log, downloaded {datetime.now():%Y-%m-%d %H:%M}\n"
+                  f"Python {sys.version.split()[0]}, data folder {folder}\n\n")
+        text = statuslog.full_log_text(folder) or "(the log is empty)\n"
+        return Response(header + text, mimetype="text/plain",
+                        headers={"Content-Disposition":
+                                 f"attachment; filename=mytodo-log-{datetime.now():%Y%m%d-%H%M}.txt"})
+
+    @app.post("/status/open-folder")
+    def status_open_folder():
+        # only meaningful when running as the desktop app on this PC
+        if app.config.get("SHUTDOWN") and sys.platform == "win32":
+            os.startfile(app.config["DATA_DIR"])  # noqa: S606 - local folder, local user
+        else:
+            flash(f"Data folder: {app.config['DATA_DIR']}", "ok")
+        return redirect(url_for("status"))
+
+    @app.errorhandler(500)
+    def server_error(err):
+        # Flask has already logged the full traceback to the log file
+        return render_template("error.html", path=request.path,
+                               when=datetime.now()), 500
+
     # ---------- backup ----------
 
     @app.get("/backup")
@@ -334,8 +423,10 @@ def create_app(data_dir=None):
             with conn:
                 n = backup.import_data(conn, data, mode)
         except backup.BackupError as e:
+            log.warning("Backup import rejected: %s", e)
             flash(f"Import rejected: {e}", "error")
             return redirect(url_for("backup_page"))
+        log.info("Imported %s task(s) from %s (%s)", n, upload.filename, mode)
         flash(f"Imported {n} task(s) ({mode}).", "ok")
         return redirect(url_for("dashboard"))
 
@@ -352,6 +443,17 @@ def startup_backup(app):
 
 
 PORT_TRIES = 20  # 5000, 5001, ... 5019
+PORT_FILE = "mytodo.port"  # written next to the database while MyTodo is running
+LOG_FILE = statuslog.LOG_FILE
+
+
+
+def data_dir():
+    return Path(os.environ.get("MYTODO_DATA") or BASE_DIR / "data")
+
+
+def _same_path(a, b):
+    return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
 
 
 def port_in_use(port):
@@ -360,50 +462,149 @@ def port_in_use(port):
         return s.connect_ex(("127.0.0.1", port)) == 0
 
 
-def is_mytodo(port):
-    """True if the program listening on `port` is a running MyTodo."""
+def is_mytodo(port, db_path):
+    """True if `port` is a running MyTodo that uses the same database as us."""
     try:
         with urllib.request.urlopen(f"http://127.0.0.1:{port}/__mytodo", timeout=1) as r:
-            return r.read(32).decode("utf-8", "ignore").startswith("MyTodo")
+            text = r.read(4096).decode("utf-8", "ignore")
     except Exception:
         return False
+    lines = text.splitlines()
+    return bool(lines) and lines[0].startswith("MyTodo") and len(lines) > 1 \
+        and _same_path(lines[1], db_path)
 
 
-def choose_port(start):
+def read_port_file(folder):
+    try:
+        return int((Path(folder) / PORT_FILE).read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None
+
+
+def find_running(folder, db_path):
+    """Port of an already-running MyTodo for this data folder, else None."""
+    port = read_port_file(folder)
+    if port and is_mytodo(port, db_path):
+        return port
+    return None
+
+
+def choose_port(start, db_path):
     """Return (port, already_running). Skips ports taken by other programs."""
     for port in range(start, start + PORT_TRIES):
         if not port_in_use(port):
             return port, False
-        if is_mytodo(port):
+        if is_mytodo(port, db_path):
             return port, True
-        print(f"Port {port} is used by another program, trying {port + 1}...")
-    raise SystemExit(f"No free port found between {start} and {start + PORT_TRIES - 1}.")
+        log.info("Port %s is used by another program, trying %s...", port, port + 1)
+    raise RuntimeError(f"No free port found between {start} and {start + PORT_TRIES - 1}.")
+
+
+class _LogWriter:
+    """Stand-in for stdout/stderr when there is no console window."""
+    def __init__(self, level):
+        self.level = level
+
+    def write(self, text):
+        text = text.rstrip()
+        if text:
+            log.log(self.level, text)
+
+    def flush(self):
+        pass
+
+
+def setup_logging(folder):
+    folder.mkdir(parents=True, exist_ok=True)
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    fh = RotatingFileHandler(folder / LOG_FILE, maxBytes=1_000_000, backupCount=2,
+                             encoding="utf-8")
+    fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    root.addHandler(fh)
+    root.addHandler(PROBLEMS)
+    has_console = sys.stdout is not None and sys.stderr is not None
+    if has_console:
+        sh = logging.StreamHandler(sys.stdout)
+        sh.setFormatter(logging.Formatter("%(message)s"))
+        root.addHandler(sh)
+    else:
+        # windowless exe: anything printed (incl. tracebacks) goes to the log file
+        sys.stdout = _LogWriter(logging.INFO)
+        sys.stderr = _LogWriter(logging.ERROR)
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)  # no per-request lines
+
+
+def show_error(message):
+    """Tell the user something went wrong, even without a console window."""
+    log.error(message)
+    if sys.platform == "win32" and (sys.stdout is None or isinstance(sys.stdout, _LogWriter)):
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None, message, "MyTodo", 0x10)
+        except Exception:
+            pass
+
+
+def open_in_browser(url):
+    if not os.environ.get("MYTODO_NO_BROWSER"):
+        webbrowser.open(url)
 
 
 def main():
-    open_browser = not os.environ.get("MYTODO_NO_BROWSER")
-    port, already_running = choose_port(int(os.environ.get("MYTODO_PORT", "5000")))
-    url = f"http://127.0.0.1:{port}"
-    if already_running:
-        # e.g. exe double-clicked twice: just open the existing one.
-        print(f"MyTodo already running at {url}")
-        if open_browser:
-            webbrowser.open(url)
+    folder = data_dir()
+    setup_logging(folder)
+    db_path = str(folder / "mytodo.db")
+
+    # 1. Already running? Open the browser on the port it is actually using.
+    port = find_running(folder, db_path)
+    if port:
+        log.info("MyTodo already running at http://127.0.0.1:%s", port)
+        open_in_browser(f"http://127.0.0.1:{port}")
         return
-    application = create_app()
+
+    application = create_app(folder)
     startup_backup(application)
-    if open_browser:
-        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
-    print(f"MyTodo {__version__} running at {url}")
-    print(f"Data folder: {BASE_DIR / 'data'}")
-    print("Keep this window open while using MyTodo. Close it (or Ctrl+C) to stop.")
-    # quiet console: no Flask banner / per-request lines, errors still shown
-    import logging
-    import flask.cli
-    flask.cli.show_server_banner = lambda *a, **k: None
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
-    application.run(host="127.0.0.1", port=port, debug=False)
+
+    # 2. Pick a free port (skipping other programs) and bind to it.
+    start = int(os.environ.get("MYTODO_PORT", "5000"))
+    server = None
+    while server is None:
+        port, already_running = choose_port(start, db_path)
+        if already_running:
+            log.info("MyTodo already running at http://127.0.0.1:%s", port)
+            open_in_browser(f"http://127.0.0.1:{port}")
+            return
+        try:
+            server = make_server("127.0.0.1", port, application, threaded=True)
+        except OSError:  # taken in the meantime: try the next one
+            start = port + 1
+
+    def shutdown():
+        # give the "MyTodo has stopped" page time to reach the browser first
+        threading.Timer(0.7, server.shutdown).start()
+    application.config["SHUTDOWN"] = shutdown
+
+    port_file = folder / PORT_FILE
+    port_file.write_text(str(port), encoding="utf-8")
+    url = f"http://127.0.0.1:{port}"
+    log.info("MyTodo %s running at %s (data: %s)", __version__, url, folder)
+    open_in_browser(url)  # the socket is already listening, so the page loads
+    try:
+        server.serve_forever()
+    finally:
+        if read_port_file(folder) == port:
+            port_file.unlink(missing_ok=True)
+        log.info("MyTodo stopped.")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger("mytodo").exception("MyTodo failed to start")
+        show_error(f"MyTodo could not start:\n\n{exc}\n\nDetails are in "
+                   f"{data_dir() / LOG_FILE}")
+        sys.exit(1)

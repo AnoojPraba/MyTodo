@@ -20,6 +20,12 @@
     <a href="{{ url_for('review_page') }}" class="{{ 'active' if request.endpoint in ('review_page', 'review_saved') }}">Review</a>
     <a href="{{ url_for('backup_page') }}" class="{{ 'active' if request.endpoint == 'backup_page' }}">Backup</a>
     <a href="{{ url_for('task_new') }}" class="btn primary">+ New task</a>
+    {% if can_quit %}
+    <form method="post" action="{{ url_for('quit_app') }}" class="inline confirm-form quit-form"
+          data-confirm="Quit MyTodo?&#10;&#10;Your work is saved. Double-click MyTodo.exe to start it again.">
+      <button class="btn ghost" title="Stop MyTodo">Quit</button>
+    </form>
+    {% endif %}
   </nav>
 </header>
 <main>
@@ -28,6 +34,11 @@
   {% endwith %}
   {% block content %}{% endblock %}
 </main>
+<footer class="app-foot no-print">
+  MyTodo {{ app_version }} ·
+  <a href="{{ url_for('status') }}" class="{{ 'active' if request.endpoint == 'status' }}">Status &amp; log</a>{% if log_problems %}
+  <a href="{{ url_for('status', show='problems') }}" class="foot-alert" title="Warnings or errors in the log">⚠ {{ log_problems }}</a>{% endif %}
+</footer>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,45 @@
+# Changelog
+
+All notable changes to MyTodo. The newest version is first.
+
+## v1.3.0 (2026-11-11)
+
+### Runs in the background
+- **No more black window.** `MyTodo.exe` now runs quietly in the background and opens in your **Windows default browser**. If you change or uninstall a browser, MyTodo simply follows the new default.
+- **Quit button** at the top right stops MyTodo cleanly. It asks for confirmation first and then shows a "MyTodo has stopped" page.
+- **Always opens the right address.** MyTodo remembers the port it is using (in `data\mytodo.port`). Double-clicking `MyTodo.exe` again reopens the copy that is already running, even if it is not on port 5000. It also never mistakes another copy of MyTodo, using a different `data` folder, for yours.
+- `run.bat` also starts MyTodo in the background once setup is done.
+
+### Troubleshooting
+- New **Status & log** page, linked at the bottom of every page:
+  - version, address, data folder, database size and last backup
+  - the log, newest first, with a **Warnings & errors only** filter and expandable technical details
+  - **Open data folder** and **Download log** buttons
+- A red **⚠** badge next to the link shows warnings or errors since MyTodo started.
+- A friendly **"Something went wrong"** page replaces bare server errors and links straight to the log.
+- Everything is logged to `data\mytodo.log`: starts, stops, port changes, backup imports and errors. Older entries are kept in rotated files.
+- If MyTodo cannot start at all, an error box says why.
+
+## v1.2.0 (2026-11-09)
+- **A closing summary is required** whenever a task is closed: from the dashboard dropdown (a box asks for it), the task page or the edit form. It appears as **Outcome** in the performance review and its CSV, on the task page, in the history log and on the Closed list.
+- New **logo**, shown in the app, the browser tab and on `MyTodo.exe`.
+- Existing databases and backups are upgraded automatically.
+
+## v1.1.0 (2026-11-09)
+- **Performance review** page:
+  - pick a period, with quick buttons
+  - **Completed** and **In progress** sections, summary numbers, and your own summary
+  - leave out individual tasks
+  - comment detail settings
+  - share as **PDF**, an emailable **HTML** file, or **CSV**
+- **Save this review**: keeps a copy under *Past reviews*, and the next review starts the day after it ended.
+- Backups now include saved reviews and summaries. Older backups still import.
+
+## v1.0.0 (2026-11-08)
+- First release: tasks with priority and due date, and the states New / Triage / Depended / Closed.
+- Dashboard of open tasks with counts, overdue tasks, filters, search, sorting and quick state changes.
+- History log of every change, and comments.
+- Closed tasks page, with reopening.
+- Open-tasks report: print, PDF and CSV.
+- JSON backup and restore (merge or replace), plus automatic backups at startup.
+- Standalone Windows `MyTodo.exe`: nothing to install. If port 5000 is busy, it picks the next free port.

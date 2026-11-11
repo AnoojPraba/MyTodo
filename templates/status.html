@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Status & log · MyTodo{% endblock %}
+{% block content %}
+<h1>Status &amp; log</h1>
+
+<section class="panel status-grid">
+  <dl class="meta">
+    <dt>Version</dt><dd>MyTodo {{ info.version }}{% if not info.packaged %} <span class="muted small">(running from source, Python {{ info.python }})</span>{% endif %}</dd>
+    <dt>Address</dt><dd><code>{{ info.url }}</code></dd>
+    <dt>Data folder</dt><dd><code>{{ info.data_dir }}</code></dd>
+    <dt>Database</dt><dd>{{ info.db_size }} · {{ info.tasks_open }} open, {{ info.tasks_closed }} closed task{{ '' if info.tasks_closed == 1 else 's' }}</dd>
+    <dt>Last backup</dt><dd>{% if info.last_backup %}{{ info.last_backup.strftime('%d %b %Y, %H:%M') }}{% else %}<span class="overdue-text">None yet</span> · <a href="{{ url_for('backup_page') }}">make one</a>{% endif %}</dd>
+    <dt>Log file</dt><dd><code>{{ info.log_path }}</code></dd>
+  </dl>
+  <div class="actions">
+    <form method="post" action="{{ url_for('status_open_folder') }}" class="inline">
+      <button class="btn">Open data folder</button>
+    </form>
+    <a class="btn" href="{{ url_for('status_log_download') }}">Download log</a>
+  </div>
+</section>
+
+<div class="log-head">
+  <h2>Log <span class="muted small">(newest first)</span></h2>
+  <form method="get" class="filters auto-submit">
+    <select name="show">
+      <option value="" {{ 'selected' if not problems }}>Everything</option>
+      <option value="problems" {{ 'selected' if problems }}>Warnings &amp; errors only ({{ n_problems }})</option>
+    </select>
+  </form>
+</div>
+
+{% if n_problems and not problems %}
+<div class="flash error">{{ n_problems }} warning{{ '' if n_problems == 1 else 's' }} or error{{ '' if n_problems == 1 else 's' }} in the log.
+  <a href="{{ url_for('status', show='problems') }}">Show only those</a></div>
+{% endif %}
+
+{% if entries %}
+<table class="tasks log-table">
+  <thead><tr><th>When</th><th>Level</th><th>Message</th></tr></thead>
+  <tbody>
+  {% for e in entries %}
+    <tr class="lvl-{{ e.level|lower }}">
+      <td class="nowrap muted small">{{ e.when }}</td>
+      <td><span class="lvl">{{ e.level|capitalize }}</span></td>
+      <td>
+        <div class="log-msg">{{ e.message }}</div>
+        {% if e.details %}
+        <details><summary class="small">Technical details</summary><pre>{{ e.details }}</pre></details>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="muted small">Showing up to 500 entries. <b>Download log</b> gives you the full file, which you can send to whoever is helping you.</p>
+{% else %}
+<div class="empty">
+  {% if problems %}No warnings or errors. Everything looks fine.
+  {% else %}The log is empty. Entries appear here once MyTodo is started as an app (<code>MyTodo.exe</code> or <code>run.bat</code>).{% endif %}
+</div>
+{% endif %}
+{% endblock %}
