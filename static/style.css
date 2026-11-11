@@ -145,7 +145,7 @@ form.inline { display: inline; }
 .quit-form .btn:hover { color: var(--danger); border-color: var(--danger); }
 
 /* footer + status & log */
-.app-foot { max-width: 1150px; margin: 0 auto; padding: 0 1rem 1.5rem; color: var(--muted); font-size: .85rem; }
+.app-foot { max-width: 1150px; margin: 0 auto; padding: 0 1rem 1.5rem; color: var(--muted); font-size: .75rem; }
 .app-foot a { color: var(--muted); text-decoration: underline; }
 .app-foot a.foot-alert { color: var(--danger); font-weight: 600; text-decoration: none; margin-left: .4rem; }
 .status-grid { margin-bottom: 1.5rem; }
@@ -184,4 +184,4 @@ a.label-pill:hover { text-decoration: none; background: color-mix(in srgb, var(-
 .label-new label { display: flex; flex-direction: column; gap: .25rem; font-weight: 600; font-size: .9rem; }
 .label-edit { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
 .label-edit input { width: 13rem; max-width: 100%; }
-.foot-feedback { display: block; margin-top: .3rem; }
+.foot-feedback { white-space: nowrap; }

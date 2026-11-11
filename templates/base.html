@@ -40,7 +40,7 @@
   MyTodo {{ app_version }} · © 2026 Anooj Prabaharan ·
   <a href="{{ url_for('status') }}" class="{{ 'active' if request.endpoint == 'status' }}">Status &amp; log</a>{% if log_problems %}
   <a href="{{ url_for('status', show='problems') }}" class="foot-alert" title="Warnings or errors in the log">⚠ {{ log_problems }}</a>{% endif %}
-  <span class="foot-feedback">Ideas, changes or improvements? Email
+  · <span class="foot-feedback">Ideas or improvements?
     <a href="mailto:{{ FEEDBACK_EMAIL }}?subject={{ ('MyTodo feedback (v' ~ app_version ~ ')')|urlencode }}">{{ FEEDBACK_EMAIL }}</a></span>
 </footer>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
