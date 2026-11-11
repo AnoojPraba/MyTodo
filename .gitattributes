@@ -2,7 +2,10 @@
 # Normalise text files; keep Windows batch files with CRLF so they run after cloning
 * text=auto
 *.bat text eol=crlf
+# shell scripts must keep LF or they fail on Mac/Linux
+*.sh text eol=lf
 
 # Binary assets
 *.ico binary
 *.png binary
+*.icns binary

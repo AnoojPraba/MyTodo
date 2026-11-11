@@ -24,7 +24,7 @@
     <a href="{{ url_for('task_new') }}" class="btn primary">+ New task</a>
     {% if can_quit %}
     <form method="post" action="{{ url_for('quit_app') }}" class="inline confirm-form quit-form"
-          data-confirm="Quit MyTodo?&#10;&#10;Your work is saved. Double-click MyTodo.exe to start it again.">
+          data-confirm="Quit MyTodo?&#10;&#10;Your work is saved. Open MyTodo again to restart it.">
       <button class="btn ghost" title="Stop MyTodo">Quit</button>
     </form>
     {% endif %}

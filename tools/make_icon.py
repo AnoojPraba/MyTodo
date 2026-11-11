@@ -4,6 +4,7 @@
     static/icon.svg   header logo + browser tab icon (vector)
     static/icon.png   256 px PNG (apple-touch / fallbacks)
     icon.ico          Windows icon embedded in MyTodo.exe (16..256 px)
+    icon.icns         Mac icon embedded in MyTodo.app (16..1024 px)
 
 Concept: a check mark whose tail rises into an arrow -> "done, and moving up"
 (tasks completed + performance). Needs Pillow:  pip install pillow
@@ -98,7 +99,8 @@ def main():
              (128, 128), (256, 256)]
     big.save(ROOT / "icon.ico", sizes=sizes)
     big.resize((32, 32), Image.LANCZOS).save(ROOT / "static" / "favicon.ico")
-    print("wrote static/icon.svg, static/icon.png, static/favicon.ico, icon.ico")
+    big.save(ROOT / "icon.icns")  # Pillow writes all Mac sizes from the 1024 px image
+    print("wrote static/icon.svg, static/icon.png, static/favicon.ico, icon.ico, icon.icns")
 
 
 if __name__ == "__main__":

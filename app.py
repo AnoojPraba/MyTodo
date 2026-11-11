@@ -2,7 +2,8 @@
 """MyTodo - personal task tracker.
 
 Run: python app.py  (opens http://127.0.0.1:5000, or the next free port).
-The packaged MyTodo.exe runs with no console window; use "Quit" in the app to stop it.
+The packaged app (MyTodo.exe on Windows, MyTodo.app on a Mac) runs with no console
+window; use "Quit" in the app to stop it.
 """
 import csv
 import io
@@ -11,6 +12,7 @@ import logging
 import os
 import re
 import socket
+import subprocess
 import sys
 import threading
 import urllib.request
@@ -28,7 +30,7 @@ import db
 import review
 import statuslog
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 FEEDBACK_EMAIL = "anooj.prabaharan@outlook.com"
 
 # When packaged as MyTodo.exe (PyInstaller), keep the data folder next to the exe,
@@ -37,6 +39,30 @@ if getattr(sys, "frozen", False):
     BASE_DIR = Path(sys.executable).resolve().parent
 else:
     BASE_DIR = Path(__file__).resolve().parent
+
+
+def default_data_dir():
+    """Where MyTodo keeps its data unless told otherwise.
+
+    MYTODO_DATA wins. The packaged Mac app uses ~/Library/Application Support/MyTodo,
+    because a .app bundle may be read-only or run from a temporary copy. Everything
+    else (Windows exe, running from source) uses the "data" folder next to the program.
+    """
+    if os.environ.get("MYTODO_DATA"):
+        return Path(os.environ["MYTODO_DATA"])
+    if getattr(sys, "frozen", False) and sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "MyTodo"
+    return BASE_DIR / "data"
+
+
+def open_folder(path):
+    """Show a folder in Explorer / Finder / the desktop's file manager."""
+    if sys.platform == "win32":
+        os.startfile(str(path))  # noqa: S606 - local folder, local user
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", str(path)])
+    else:
+        subprocess.Popen(["xdg-open", str(path)])
 
 log = logging.getLogger("mytodo")
 
@@ -56,7 +82,7 @@ PROBLEMS = _ProblemCounter()
 
 def create_app(data_dir=None):
     app = Flask(__name__)
-    data_dir = Path(data_dir or os.environ.get("MYTODO_DATA") or BASE_DIR / "data")
+    data_dir = Path(data_dir or default_data_dir())
     data_dir.mkdir(parents=True, exist_ok=True)
     app.config.update(
         SECRET_KEY="mytodo-local-only",
@@ -454,10 +480,15 @@ def create_app(data_dir=None):
 
     @app.post("/status/open-folder")
     def status_open_folder():
-        # only meaningful when running as the desktop app on this PC
-        if app.config.get("SHUTDOWN") and sys.platform == "win32":
-            os.startfile(app.config["DATA_DIR"])  # noqa: S606 - local folder, local user
-        else:
+        # only meaningful when running as the desktop app on this computer
+        opened = False
+        if app.config.get("SHUTDOWN"):
+            try:
+                open_folder(app.config["DATA_DIR"])
+                opened = True
+            except OSError as exc:
+                log.warning("Could not open the data folder: %s", exc)
+        if not opened:
             flash(f"Data folder: {app.config['DATA_DIR']}", "ok")
         return redirect(url_for("status"))
 
@@ -531,7 +562,7 @@ LOG_FILE = statuslog.LOG_FILE
 
 
 def data_dir():
-    return Path(os.environ.get("MYTODO_DATA") or BASE_DIR / "data")
+    return default_data_dir()
 
 
 def _same_path(a, b):
@@ -620,10 +651,18 @@ def setup_logging(folder):
 def show_error(message):
     """Tell the user something went wrong, even without a console window."""
     log.error(message)
-    if sys.platform == "win32" and (sys.stdout is None or isinstance(sys.stdout, _LogWriter)):
+    no_console = sys.stdout is None or isinstance(sys.stdout, _LogWriter)
+    if sys.platform == "win32" and no_console:
         try:
             import ctypes
             ctypes.windll.user32.MessageBoxW(None, message, "MyTodo", 0x10)
+        except Exception:
+            pass
+    elif sys.platform == "darwin" and (no_console or getattr(sys, "frozen", False)):
+        try:  # the message is passed as an argument, so no quoting problems
+            subprocess.run(["osascript", "-e", "on run argv",
+                            "-e", 'display alert "MyTodo" message (item 1 of argv) as critical',
+                            "-e", "end run", message], timeout=300, check=False)
         except Exception:
             pass
 

@@ -5,7 +5,7 @@
 <h1 align="center">MyTodo</h1>
 
 <p align="center">
-  A personal task tracker that runs on your own computer.<br>
+  A personal task tracker that runs on your own computer, <b>Windows or Mac</b>.<br>
   It keeps track of the work you are given and records a history of every change.<br>
   It also creates a <b>performance review report</b> you can share with your manager.
 </p>
@@ -52,7 +52,7 @@
   - Share it as a **PDF**, as an **HTML file** you can email, or as a **CSV** for Excel.
   - Save each review, so that next year's review starts where this one ended.
 - **Backup and restore:** save everything to one file and load it back whenever you need to.
-- **Runs quietly in the background:** no extra windows. It opens in your Windows default browser and has a **Quit** button to stop it.
+- **Runs quietly in the background:** no extra windows. It opens in your default browser and has a **Quit** button to stop it.
 - **Status & log:** one page shows the version, address and data folder, plus a log of anything that went wrong, to make troubleshooting easy.
 - **Private:** everything stays on your computer. There is no account, no cloud and no internet connection.
 
@@ -73,14 +73,14 @@ If you are not sure, choose **Option A**.
 ## 3. What you need (requirements)
 
 ### For every option
-- A **Windows 10 or Windows 11** computer.
-- A modern **web browser**, such as Microsoft Edge, Google Chrome or Firefox. MyTodo appears inside your browser, but it runs only on your own computer.
+- A **Windows 10 or Windows 11** PC, **or** a **Mac** with macOS 12 (Monterey) or newer. The ready-made Mac app is built for Apple Silicon (M1 or newer); older Intel Macs can use Option B.
+- A modern **web browser**, such as Microsoft Edge, Google Chrome, Safari or Firefox. MyTodo appears inside your browser, but it runs only on your own computer.
 
 ### Option A: nothing else
 The app file already contains everything it needs.
 
 ### Options B and C: Python 3.10 or newer
-*Python* is the programming language MyTodo is written in. To install it:
+*Python* is the programming language MyTodo is written in. To install it on **Windows**:
 
 1. Go to <https://www.python.org/downloads/> and click the yellow **Download Python** button.
 2. Run the installer. On the first screen, **tick the box "Add python.exe to PATH"**. This step is important: it lets Windows find Python.
@@ -90,6 +90,8 @@ The app file already contains everything it needs.
    python --version
    ```
    You should see something like `Python 3.13.1`. If you see an error instead, read [Troubleshooting](#9-troubleshooting).
+
+On a **Mac**: download the macOS installer from the same page and run it. Then open **Terminal** (press Command-Space, type `Terminal`, and press Enter) and type `python3 --version` to check it worked.
 
 You also need an **internet connection the first time** you run MyTodo from the code. It downloads one small library called *Flask*. After that it works offline.
 
@@ -104,13 +106,28 @@ You also need an **internet connection the first time** you run MyTodo from the 
 
 ## 4. Option A: use the ready-made app (easiest)
 
-1. On the GitHub page for this project, open **Releases** (in the right-hand column). Download the latest `MyTodo-vX.Y.Z.zip`.
-2. Unzip it to a permanent place, for example `Documents\MyTodo`. Don't run it from inside the zip file.
-3. Double-click **`MyTodo.exe`**.
-4. **The first time,** Windows may show a blue box saying **"Windows protected your PC"**. This happens because the app is not signed with a paid Microsoft certificate, not because anything is wrong. Click **More info**, then **Run anyway**.
-5. MyTodo opens in your **default browser**, the one Windows is set to use. No other window appears; MyTodo runs quietly in the background.
+On the GitHub page for this project, open **Releases** (in the right-hand column). Download the zip for your computer:
+- **Windows:** `MyTodo-vX.Y.Z-windows.zip`
+- **Mac:** `MyTodo-vX.Y.Z-mac.zip`
+
+### On Windows
+1. Unzip it to a permanent place, for example `Documents\MyTodo`. Don't run it from inside the zip file.
+2. Double-click **`MyTodo.exe`**.
+3. **The first time,** Windows may show a blue box saying **"Windows protected your PC"**. This happens because the app is not signed with a paid Microsoft certificate, not because anything is wrong. Click **More info**, then **Run anyway**.
+4. MyTodo opens in your **default browser**. No other window appears; MyTodo runs quietly in the background.
 
 > **Closed the browser tab?** MyTodo is still running. Double-click `MyTodo.exe` again and it reopens at the right address.
+> **To stop MyTodo,** click **Quit** at the top right of the app. Your work is always saved.
+
+### On a Mac
+1. Double-click the zip to unzip it, then drag **`MyTodo.app`** into your **Applications** folder.
+2. **The first time,** macOS may say MyTodo "cannot be opened" or is from an "unidentified developer". This happens because the app is not signed with a paid Apple certificate, not because anything is wrong.
+   - **Right-click** (or Control-click) `MyTodo.app`, choose **Open**, then click **Open** again.
+   - If there's no **Open** button: open **System Settings → Privacy & Security**, scroll down, click **Open Anyway** next to MyTodo, and open it again.
+   - You only need to do this once.
+3. MyTodo opens in your **default browser**. It runs quietly in the background, with no window and no Dock icon.
+
+> **Closed the browser tab?** On a Mac, opening an app that's already running doesn't start it again, so opening MyTodo again won't reopen the tab. **Bookmark the address** (usually `http://127.0.0.1:5001`), or click **Quit** and open MyTodo again.
 > **To stop MyTodo,** click **Quit** at the top right of the app. Your work is always saved.
 
 ---
@@ -118,15 +135,16 @@ You also need an **internet connection the first time** you run MyTodo from the 
 ## 5. Option B: run it from the code
 
 1. Install Python and get the code, as described in [section 3](#3-what-you-need-requirements).
-2. Open the MyTodo folder and double-click **`run.bat`**.
-   - The **first run takes a minute or two** while it sets things up, and a setup window shows progress. This is normal.
-   - Later runs start in a few seconds.
+2. Start it:
+   - **Windows:** open the MyTodo folder and double-click **`run.bat`**.
+   - **Mac:** open **Terminal**, type `cd ` (with a space), drag the MyTodo folder into the Terminal window, press Enter, then type `sh run.sh` and press Enter.
+   - The **first run takes a minute or two** while it sets things up. This is normal. Later runs start in a few seconds.
 3. MyTodo opens in your browser and runs in the background, just like Option A. Use **Quit** in the app to stop it.
 
 <details>
 <summary><b>Prefer typing commands?</b> (click to expand)</summary>
 
-Open Command Prompt in the MyTodo folder, then run:
+Open Command Prompt (Windows) or Terminal (Mac) in the MyTodo folder, then run:
 
 ```
 python -m venv .venv
@@ -134,6 +152,8 @@ python -m venv .venv
 pip install -r requirements.txt
 python app.py
 ```
+
+On a Mac, use `python3 -m venv .venv` and `source .venv/bin/activate` for the first two lines.
 
 The first command creates a *virtual environment*: a private folder (`.venv`) that holds MyTodo's libraries, so they don't mix with anything else on your computer.
 
@@ -156,7 +176,7 @@ The top bar has six pages plus **+ New task** and **Quit**. The **Status & log**
 | **Report** | All open tasks with due dates and latest comments. Pick a label to get a status report for one release. Click **Print / Save as PDF** or **Download CSV**. |
 | **Review** | Your performance review. See the steps below. |
 | **Backup** | Download a backup, or restore from one. |
-| **Quit** | Stops MyTodo. Your work is already saved. Double-click `MyTodo.exe` to start it again. |
+| **Quit** | Stops MyTodo. Your work is already saved. Open MyTodo again (`MyTodo.exe` or `MyTodo.app`) to start it again. |
 | **Status & log** *(link at the bottom of every page)* | Version, address, data folder, last backup, and the log of what MyTodo has been doing, including any errors. Has **Open data folder** and **Download log** buttons. |
 
 ### See the open tasks in a release
@@ -177,14 +197,17 @@ The top bar has six pages plus **+ New task** and **Quit**. The **Status & log**
 
 ## 7. Your data and backups
 
-**Where your data is stored:** in a folder called **`data`**, next to `MyTodo.exe` (or next to `app.py` if you run from the code).
+**Where your data is stored:**
+- **Windows:** in a folder called **`data`**, next to `MyTodo.exe`.
+- **Mac app:** in **`~/Library/Application Support/MyTodo`**, inside your user folder, not inside the app. To go there, click **Open data folder** on the Status & log page, or press Shift-Command-G in Finder and paste the path.
+- **Running from the code (both):** in the `data` folder next to `app.py`.
 
 | File | Contents |
 |---|---|
-| `data\mytodo.db` | All your tasks, comments, history and reviews |
-| `data\mytodo.log` | A log of starts, stops and any errors. Useful when asking for help. |
-| `data\mytodo.port` | Only exists while MyTodo is running: the port number it's using |
-| `data\backups\` | Backup files. `auto-…` files are made each time MyTodo starts, and the newest 10 are kept. `pre-import-…` files are safety copies made just before you restore a backup. |
+| `mytodo.db` | All your tasks, comments, history and reviews |
+| `mytodo.log` | A log of starts, stops and any errors. Useful when asking for help. |
+| `mytodo.port` | Only exists while MyTodo is running: the port number it's using |
+| `backups\` | Backup files. `auto-…` files are made each time MyTodo starts, and the newest 10 are kept. `pre-import-…` files are safety copies made just before you restore a backup. |
 
 **To make a backup:** go to **Backup**, then click **Download backup**. Keep the file somewhere safe, such as OneDrive or a USB stick.
 
@@ -194,7 +217,7 @@ The top bar has six pages plus **+ New task** and **Quit**. The **Status & log**
 
 The file is checked before anything changes, and a safety copy of your current data is saved first.
 
-**Moving to another computer:** copy `MyTodo.exe` **and** the `data` folder together. You can also make a backup on the old computer and restore it on the new one.
+**Moving to another computer:** make a backup on the old computer and restore it on the new one. This works between Windows and Mac in either direction. Between two Windows PCs, you can also copy `MyTodo.exe` **and** the `data` folder together.
 
 > ⚠️ **Never upload the `data` folder (or backup files) to GitHub or anywhere public.** They contain your work tasks and review notes. This project's `.gitignore` file already stops Git from including them.
 
@@ -204,7 +227,9 @@ The file is checked before anything changes, and a safety copy of your current d
 
 1. Optional but recommended: make a backup first (**Backup → Download backup**).
 2. Stop MyTodo: click **Quit** at the top right of the app.
-3. Replace the old `MyTodo.exe` with the new one. **Leave the `data` folder where it is.**
+3. Replace the old app with the new one.
+   - **Windows:** replace `MyTodo.exe`, and **leave the `data` folder where it is.**
+   - **Mac:** replace `MyTodo.app` in Applications. Your data is kept separately, so nothing else needs to be done.
 4. Start MyTodo. Your existing data is upgraded automatically, and backups from older versions still restore.
 
 ---
@@ -214,31 +239,37 @@ The file is checked before anything changes, and a safety copy of your current d
 > **First stop for any problem: the Status & log page.** Click **Status & log** at the bottom of any page. It shows the address MyTodo is using and where your data is, and lists what happened, including errors. Choose **Warnings & errors only** to see just the problems. If you need help from someone, click **Download log** and send them the file. When something goes wrong, a red **⚠** number also appears next to that link.
 
 **The browser didn't open.**
-Open the `data` folder next to `MyTodo.exe`. The file **`mytodo.port`** contains the number MyTodo is using, for example `5000`. Type `http://127.0.0.1:5000` into your browser, replacing `5000` with that number. The log file **`mytodo.log`** in the same folder also records the address and any problems.
+Open your data folder (see [section 7](#7-your-data-and-backups)). The file **`mytodo.port`** contains the number MyTodo is using, for example `5000`. Type `http://127.0.0.1:5000` into your browser, replacing `5000` with that number. The log file **`mytodo.log`** in the same folder also records the address and any problems.
 
 **Which browser does MyTodo use?**
-Whichever browser Windows is set to use by default. To change it, open **Settings → Apps → Default apps**. MyTodo follows your choice automatically, and nothing breaks if you uninstall a browser.
+Your default browser. To change it, on **Windows** open **Settings → Apps → Default apps**; on a **Mac** open **System Settings → Desktop & Dock → Default web browser**. MyTodo follows your choice automatically, and nothing breaks if you uninstall a browser.
 
 **MyTodo isn't on port 5000.**
-Nothing is wrong. Another program on your computer was using that *port* (a numbered connection point), so MyTodo picked the next free one. It always opens your browser on the port it is really using.
+Nothing is wrong. Another program on your computer was using that *port* (a numbered connection point), so MyTodo picked the next free one. On a Mac this is usual: macOS uses port 5000 for AirPlay, so MyTodo uses 5001. It always opens your browser on the port it is really using.
 
 **Double-clicking MyTodo again only opens a browser tab.**
-That's expected. MyTodo is already running, so it just opens the existing one for you.
+That's expected on Windows. MyTodo is already running, so it just opens the existing one for you.
 
 **How do I know if MyTodo is running?**
-Double-click `MyTodo.exe`. If it's running, your browser opens it; if not, it starts. You can also look for **MyTodo** in Task Manager.
+On Windows, double-click `MyTodo.exe`: if it's running, your browser opens it; if not, it starts. You can also look for **MyTodo** in Task Manager. On a Mac, look for **MyTodo** in **Activity Monitor**, or try your bookmarked address.
+
+**On a Mac, opening MyTodo again does nothing.**
+MyTodo is already running, and macOS doesn't start an app twice. Open your bookmark (usually `http://127.0.0.1:5001`). If you don't have one, the port number is in `mytodo.port` in your data folder. Or quit MyTodo from **Activity Monitor** and open it again.
+
+**macOS says MyTodo "cannot be opened" or is from an "unidentified developer".**
+Right-click `MyTodo.app`, choose **Open**, then click **Open**. See [Option A, On a Mac](#on-a-mac).
 
 **"Windows protected your PC" appears.**
-Click **More info**, then **Run anyway**. See [Option A, step 4](#4-option-a-use-the-ready-made-app-easiest).
+Click **More info**, then **Run anyway**. See [Option A, On Windows](#on-windows).
 
 **A Windows Firewall message appears.**
 You can click **Cancel**. MyTodo only talks to your own computer (`127.0.0.1`) and needs no network access.
 
 **I clicked Quit by mistake.**
-Double-click `MyTodo.exe` (or `run.bat`) to start it again. Nothing is lost, because every change is saved immediately.
+Open MyTodo again (`MyTodo.exe`, `MyTodo.app`, `run.bat` or `run.sh`). Nothing is lost, because every change is saved immediately.
 
 **MyTodo shows an error box and won't start.**
-The message says what went wrong. Because the app isn't running, the Status & log page isn't available, so open `data\mytodo.log` in Notepad for the details.
+The message says what went wrong. Because the app isn't running, the Status & log page isn't available, so open `mytodo.log` in your data folder with Notepad (Windows) or TextEdit (Mac) for the details.
 
 **A page says "Something went wrong".**
 Your saved data is not affected. Click **Open Status & log** on that page to see the error details, or download the log to share it.
@@ -249,7 +280,10 @@ Write at least a sentence (10 characters or more) describing the outcome. It is 
 **`'python' is not recognized as an internal or external command`** (Options B and C).
 Python is either not installed or not on the *PATH*, the list of places Windows looks for programs. Run the Python installer again, choose **Modify**, and make sure **"Add Python to environment variables"** is ticked. Then close and reopen Command Prompt.
 
-**`run.bat` says "Setup failed".**
+**`python3: command not found`** (Mac, Options B and C).
+Python isn't installed. Install it from <https://www.python.org/downloads/>, then close and reopen Terminal.
+
+**`run.bat` or `run.sh` says "Setup failed".**
 Check that Python is installed (see above) and that you are connected to the internet the first time.
 
 ---
@@ -257,7 +291,7 @@ Check that Python is installed (see above) and that you are connected to the int
 ## 10. For developers (Option C: build the app yourself)
 
 ### Tech stack
-Python 3.10+, Flask, SQLite (built into Python), and plain HTML, CSS and JavaScript with no build step. The single-file Windows `.exe` is made with PyInstaller.
+Python 3.10+, Flask, SQLite (built into Python), and plain HTML, CSS and JavaScript with no build step. The Windows `MyTodo.exe` and the Mac `MyTodo.app` are made with PyInstaller, built automatically by GitHub Actions.
 
 ### Project layout
 
@@ -272,9 +306,11 @@ Python 3.10+, Flask, SQLite (built into Python), and plain HTML, CSS and JavaScr
 | `static/` | CSS, JavaScript and logo files |
 | `tests/` | Automated tests (pytest) |
 | `tools/make_icon.py` | Regenerates all logo files from one design |
-| `icon.ico` | Windows icon built into the `.exe` |
-| `run.bat` | Sets up and runs from the code (Option B) |
-| `build_release.bat` / `build_release.py` | Runs the tests, builds `MyTodo.exe`, and packages a release zip |
+| `icon.ico` / `icon.icns` | App icons for Windows (`.exe`) and Mac (`.app`) |
+| `run.bat` / `run.sh` | Sets up and runs from the code on Windows / Mac (Option B) |
+| `build_release.py` | Runs the tests, builds `MyTodo.exe` (on Windows) or `MyTodo.app` (on a Mac), and packages a release zip |
+| `build_release.bat` | Windows shortcut: sets up the build tools and runs `build_release.py` |
+| `.github/workflows/release.yml` | GitHub Actions: builds and tests on Windows and Mac, and creates a draft release when a version tag is pushed |
 | `requirements.txt` | Libraries needed to run the app (Flask) |
 | `requirements-dev.txt` | Extra tools for testing and building (pytest, PyInstaller, Pillow) |
 
@@ -286,27 +322,39 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest
 ```
 
-### Build a release
-1. Update `__version__` in `app.py`, for example `"1.3.0"`.
-2. Double-click **`build_release.bat`**. It installs the build tools, runs all the tests, and builds the app.
-3. The result appears in `release\MyTodo-v<version>\`, along with a matching `.zip`:
-   - `MyTodo.exe`: the app
-   - `README.txt`: short instructions for users
-   - `source\`: a copy of the code
-4. Publish the `.zip` on GitHub under **Releases**. Don't commit it to the repository.
+### Build a release (automatic, Windows and Mac)
+PyInstaller can only build an app for the system it runs on, so GitHub builds both on its own Windows and Mac machines.
+1. Update `__version__` in `app.py` (for example `"1.3.2"`) and `CHANGELOG.md`, then commit and push.
+2. Create and push a tag with the same version:
+   ```
+   git tag v1.3.2
+   git push origin v1.3.2
+   ```
+3. GitHub runs all the tests on both systems and builds `MyTodo-v1.3.2-windows.zip` and `MyTodo-v1.3.2-mac.zip`. Progress is shown on the **Actions** tab, and it takes about 5–10 minutes.
+4. When it finishes, open **Releases**. A **draft** release has both zips attached. Write the description, then click **Publish release**.
+
+To try a build without making a release, go to **Actions → Build release → Run workflow**. The zips appear under *Artifacts* on the run's page.
+
+### Build on your own computer
+Double-click **`build_release.bat`** (Windows), or run `python3 build_release.py` on a Mac after installing `requirements.txt` and `requirements-dev.txt`. It runs all the tests and builds the app for that computer. The result appears in `release/MyTodo-v<version>/`, along with a matching `.zip`:
+- `MyTodo.exe` or `MyTodo.app`: the app
+- `README.txt`: short instructions for users
+- `source/`: a copy of the code
+
+Don't commit the zips to the repository; they belong under **Releases**.
 
 ### Change the logo
 Edit the colours or shape in `tools/make_icon.py`, then run:
 ```
 python tools\make_icon.py
 ```
-This rewrites `static/icon.svg`, `static/icon.png`, `static/favicon.ico` and `icon.ico`.
+This rewrites `static/icon.svg`, `static/icon.png`, `static/favicon.ico`, `icon.ico` and `icon.icns`.
 
 ### Settings (environment variables)
 | Variable | Default | Purpose |
 |---|---|---|
 | `MYTODO_PORT` | `5000` | First port to try. MyTodo tries up to 20 ports from here. |
-| `MYTODO_DATA` | `data` next to the app | Where the database and backups are stored |
+| `MYTODO_DATA` | `data` next to the app (Mac app: `~/Library/Application Support/MyTodo`) | Where the database and backups are stored |
 | `MYTODO_NO_BROWSER` | *(not set)* | Set it to `1` to stop MyTodo opening the browser at startup |
 
 ### Version history
@@ -319,7 +367,7 @@ See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
 
 ## 11. Privacy
 
-MyTodo has **no accounts, no cloud, no tracking and no internet connection**. It runs a small web server that only your own computer can reach (`127.0.0.1`), and stores everything in the `data` folder next to the app. Your tasks leave your computer only if you share a backup or report yourself.
+MyTodo has **no accounts, no cloud, no tracking and no internet connection**. It runs a small web server that only your own computer can reach (`127.0.0.1`), and stores everything in your data folder (see [section 7](#7-your-data-and-backups)). Your tasks leave your computer only if you share a backup or report yourself.
 
 ---
 

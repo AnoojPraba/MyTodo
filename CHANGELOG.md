@@ -2,6 +2,19 @@
 
 All notable changes to MyTodo. The newest version is first.
 
+## v1.3.2 (2026-11-11)
+
+### Now available for Mac
+- A ready-made **`MyTodo.app`** for Macs with Apple Silicon (M1 or newer), running macOS 12 or later. It works like the Windows version: it runs in the background with no window or Dock icon, opens in your default browser, and has a Quit button.
+- On a Mac, your data is stored in `~/Library/Application Support/MyTodo`. **Open data folder** on the Status & log page shows it in Finder.
+- If something stops MyTodo from starting, the Mac app shows an alert, just like the error box on Windows.
+- `run.sh` runs MyTodo from the code on a Mac (or Linux), like `run.bat` on Windows.
+- Moving between Windows and Mac: make a backup on one and restore it on the other.
+
+### Releases
+- GitHub now builds both the Windows and Mac apps automatically, and runs all tests on both systems, whenever a version tag is pushed. The zips are named `MyTodo-vX.Y.Z-windows.zip` and `MyTodo-vX.Y.Z-mac.zip`.
+- The README and the in-app wording now cover both Windows and Mac.
+
 ## v1.3.1 (2026-11-11)
 
 ### Labels
