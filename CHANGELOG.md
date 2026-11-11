@@ -2,7 +2,7 @@
 
 All notable changes to MyTodo. The newest version is first.
 
-## Unreleased
+## v1.3.1 (2026-11-11)
 
 ### Labels
 - Tag tasks with **coloured labels**, such as a release, a team or a type. A task can have several.
