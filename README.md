@@ -10,6 +10,11 @@
   It also creates a <b>performance review report</b> you can share with your manager.
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="The MyTodo dashboard: open tasks with priority, due date, state and labels, plus counts per state and overdue" width="900">
+</p>
+<p align="center"><sub>The Dashboard. All screenshots use made-up example tasks.</sub></p>
+
 ---
 
 ## Contents
@@ -179,10 +184,21 @@ The top bar has six pages plus **+ New task** and **Quit**. The **Status & log**
 | **Quit** | Stops MyTodo. Your work is already saved. Open MyTodo again (`MyTodo.exe` or `MyTodo.app`) to start it again. |
 | **Status & log** *(link at the bottom of every page)* | Version, address, data folder, last backup, and the log of what MyTodo has been doing, including any errors. Has **Open data folder** and **Download log** buttons. |
 
+### Working on a task
+Click a task's title to open it. On the left, you can change its state. When it's waiting on someone, choose **Depended** and note what it's waiting for. On the right, add comments as the work goes on. Every change is recorded underneath with the date and time, and can't be edited or deleted.
+
+![A task page: details and state on the left; comments and the full history of state changes on the right](docs/screenshots/task.png)
+
 ### See the open tasks in a release
 1. When you add or edit a task, tick a label in **Labels**, or type a new one such as `Release 2026.1`.
 2. Open **Labels** and click the release's **open** count. The Dashboard now shows only that release's open tasks, and its count cards count only those tasks.
 3. For a shareable status report, click **report** next to the count, or choose the label on the **Report** page. Then print it, save it as a PDF, or download a CSV.
+
+![The Labels page: each label with its number of open and closed tasks, and controls to rename, recolour or delete it](docs/screenshots/labels.png)
+
+The report for one release shows each open task with its state, due date (overdue ones in red) and the latest comment:
+
+![The open tasks report filtered to Release 2026.4, with Print / Save as PDF and Download CSV buttons](docs/screenshots/report.png)
 
 ### Your yearly review in 5 steps
 1. Open **Review**. The period is filled in for you: from the day after your last saved review (or 1 January) up to today.
@@ -190,6 +206,8 @@ The top bar has six pages plus **+ New task** and **Quit**. The **Status & log**
 3. Write your highlights in **My summary**, then click **Save summary**.
 4. Share the review with **Print / Save as PDF**, **Download for email (.html)** or **Download CSV**.
 5. After your discussion, click **Save this review**. It is kept under *Past reviews*, and next year's review starts the day after this one ended.
+
+![The Review page: period and summary at the top, then summary numbers and each completed task with its outcome](docs/screenshots/review.png)
 
 > **Tip:** write good closing summaries as you close tasks. They become the "Outcome" lines in your review, so you won't have to remember a whole year's work at once.
 
@@ -216,6 +234,8 @@ The top bar has six pages plus **+ New task** and **Quit**. The **Status & log**
 - **Replace all:** clears what you have and loads the backup instead.
 
 The file is checked before anything changes, and a safety copy of your current data is saved first.
+
+![The Backup & restore page: Download backup on the left; choose a file, Merge or Replace all, and Import on the right](docs/screenshots/backup.png)
 
 **Moving to another computer:** make a backup on the old computer and restore it on the new one. This works between Windows and Mac in either direction. Between two Windows PCs, you can also copy `MyTodo.exe` **and** the `data` folder together.
 
@@ -306,6 +326,7 @@ Python 3.10+, Flask, SQLite (built into Python), and plain HTML, CSS and JavaScr
 | `static/` | CSS, JavaScript and logo files |
 | `tests/` | Automated tests (pytest) |
 | `tools/make_icon.py` | Regenerates all logo files from one design |
+| `docs/screenshots/` | README screenshots, taken with made-up example data |
 | `icon.ico` / `icon.icns` | App icons for Windows (`.exe`) and Mac (`.app`) |
 | `run.bat` / `run.sh` | Sets up and runs from the code on Windows / Mac (Option B) |
 | `build_release.py` | Runs the tests, builds `MyTodo.exe` (on Windows) or `MyTodo.app` (on a Mac), and packages a release zip |
